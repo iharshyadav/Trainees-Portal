@@ -5,7 +5,7 @@ import {NextResponse } from "next/server";
 export async function POST(req:Request) {
     await ConnectToDB();
     const body = await req.json();
-    const {studentNo, password } = body;
+    const {studentNo, password,Name } = body;
 
     // console.log(studentNo, password);
     // console.log(body);
@@ -20,7 +20,7 @@ export async function POST(req:Request) {
       return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
 
-    const user = new User({ studentNo, password});
+    const user = new User({ studentNo, password,Name});
     await user.save();
 
     return NextResponse.json({ message: 'User created successfully!' });

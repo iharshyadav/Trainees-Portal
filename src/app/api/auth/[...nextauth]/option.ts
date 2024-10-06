@@ -49,7 +49,8 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Incorrect password");
           }
 
-          return user;
+          const { password: _, ...userWithoutPassword } = user.toObject(); // Convert Mongoose document to plain object and omit password
+          return userWithoutPassword;
 
       } catch (error) {
           console.log(error);
@@ -61,17 +62,21 @@ export const authOptions: NextAuthOptions = {
   callbacks : {
     async jwt({token , user}){
       if(user){
-         token.id = user._id?.toString();
-         token.isVerified = user.isVerified;
-         token.studentNo = user.studentNo;
+        token.id = user._id?.toString();
+        token.studentNo = user.studentNo; 
+        token.name = user.name; 
+        token.projects = user.projects || [];
+        token.role = user.role || "user";
       }
       return token
     },
     async session({session , token}){
       if(token){
-        session.user._id = token._id as string;
+        session.user._id = token.id as string; 
         session.user.studentNo = token.studentNo as string;
-        session.user.isVerified = token.isVerified as boolean
+        session.user.name = token.name as string; 
+        session.user.projects = token.projects as { title: string; link: string; submissionDate: Date; }[] | undefined;
+        session.user.role = token.role as "admin" | "user" | undefined;
       }
       return session;
     }
