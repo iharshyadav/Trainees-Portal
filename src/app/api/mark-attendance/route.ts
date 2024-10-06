@@ -1,16 +1,15 @@
 import Attendance from '@/lib/models/attendance.model';
 import {ConnectToDB} from '@/lib/db';
-import { getSession } from "next-auth/react"
 import {NextResponse } from "next/server";
 import { NextApiRequest,  NextApiResponse } from 'next';
 import { authOptions } from "../auth/[...nextauth]/option"
 import { getServerSession } from "next-auth/next"
 
-export async function POST(req: NextApiRequest,res: NextApiResponse) {
+export async function POST() {
   await ConnectToDB();
   // console.log(req)
   const session = await getServerSession(authOptions)
-  // console.log(session)
+   console.log(session)
   if (!session) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
@@ -20,7 +19,7 @@ export async function POST(req: NextApiRequest,res: NextApiResponse) {
   const now = new Date();
 
   const attendanceDate = new Date(now); 
-  attendanceDate.setHours(17, 40, 0, 0); 
+  attendanceDate.setHours(18, 45, 0, 0); 
 
 
   const timeDiff = Math.abs(now.getTime() - attendanceDate.getTime());
