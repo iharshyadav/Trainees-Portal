@@ -18,6 +18,7 @@ import { EditProfilePopup } from "./edit-student-profile"
 import axios from "axios"
 import { saveNewProject, showAttendence, showFlaggedUserDetail, showFlaggedUserDetailStudent, showUserDetail } from "@/lib/action"
 import { signOut, useSession } from "next-auth/react"
+import StudentNavbar from "./navbar"
 
 
 interface userFlagCount {
@@ -263,10 +264,9 @@ export default function EnhancedStudentDashboard() {
   
 
   return (
+    <>
+      <StudentNavbar />
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        BDCOE Student Dashboard
-      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
@@ -776,5 +776,6 @@ export default function EnhancedStudentDashboard() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
