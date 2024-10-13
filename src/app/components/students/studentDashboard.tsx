@@ -208,29 +208,30 @@ export default function EnhancedStudentDashboard() {
   
   useEffect(() => {
     if (isSubmitted) {
-      const submitProject = async () => {
+      // const submitProject = async () => {
 
-        if(newProject.description.length > 500){
-          toast.error("Description should be less than 500 words!!!");
-          setIsSubmitted(false); 
-          return;
-        }
+      //   if(newProject.description.length > 500){
+      //     toast.error("Description should be less than 500 words!!!");
+      //     setIsSubmitted(false); 
+      //     return;
+      //   }
 
-        const task = await saveNewProject(newProject.name , newProject.description , newProject.dueDate)
-        // console.log(task);
-        if (typeof task === 'object' && task !== null && 'status' in task && (task as { status: number }).status === 200) {
-            toast.success("Task Successfully Submitted!!", {
-              icon: <FaCheckCircle color="#4CAF50" />
-          })
-           setNewProject({ name: "", description: "", dueDate: "" })
-        }else{
-          toast.error("Failed to submit task, Task already submitted !!!", {
-            icon: <FaTimesCircle color="#F44336" />
-        });
-        }
-        setIsSubmitted(false); 
-      } 
-      submitProject();
+      //   const task = await saveNewProject(newProject.name , newProject.description , newProject.dueDate)
+      //   // console.log(task);
+      //   if (typeof task === 'object' && task !== null && 'status' in task && (task as { status: number }).status === 200) {
+      //       toast.success("Task Successfully Submitted!!", {
+      //         icon: <FaCheckCircle color="#4CAF50" />
+      //     })
+      //      setNewProject({ name: "", description: "", dueDate: "" })
+      //   }else{
+      //     toast.error("Failed to submit task, Task already submitted !!!", {
+      //       icon: <FaTimesCircle color="#F44336" />
+      //   });
+      //   }
+      //   setIsSubmitted(false); 
+      // } 
+      // submitProject();
+      toast.error("portal closed")
     }
   }, [isSubmitted]);
 
