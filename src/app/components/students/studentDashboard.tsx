@@ -210,8 +210,8 @@ export default function EnhancedStudentDashboard() {
     if (isSubmitted) {
       const submitProject = async () => {
 
-        if(newProject.description.length > 400){
-          toast.error("Description should be less than 400 words!!!");
+        if(newProject.description.length > 500){
+          toast.error("Description should be less than 500 words!!!");
           setIsSubmitted(false); 
           return;
         }
