@@ -441,9 +441,9 @@ export default function EnhancedStudentDashboard() {
                 </CardContent>
               </TabsContent>
               <TabsContent value="projects">
-                <div className="">
+                <div className="relative">
                   {/* Overlay Screen for Closed Message */}
-                  {/* <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
                   <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -460,10 +460,10 @@ export default function EnhancedStudentDashboard() {
                       />
                     </svg>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Section Unavailable
+                      Portal Closed
                     </h2>
                     <p className="text-gray-600 mb-6">
-                      We're sorry, but this section is currently closed. Please
+                      We're sorry, but the portal is currently closed. Please
                       check back later.
                     </p>
                     <a
@@ -475,7 +475,7 @@ export default function EnhancedStudentDashboard() {
                       More Information
                     </a>
                   </div>
-                </div> */}
+                </div>
 
                   <CardHeader>
                     <CardTitle>Projects</CardTitle>
