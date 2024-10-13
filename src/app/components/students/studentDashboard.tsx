@@ -16,9 +16,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EditProfilePopup } from "./edit-student-profile"
 import axios from "axios"
-import { saveNewProject, showAttendence, showFlaggedUserDetail, showFlaggedUserDetailStudent, showUserDetail } from "@/lib/action"
+import { fetchUserProjects, saveNewProject, showAttendence, showFlaggedUserDetail, showFlaggedUserDetailStudent, showUserDetail } from "@/lib/action"
 import { signOut, useSession } from "next-auth/react"
 import StudentNavbar from "./navbar"
+import { toast } from "sonner"
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"
+import { FiCheckCircle } from 'react-icons/fi';
 
 
 interface userFlagCount {
@@ -144,28 +147,29 @@ export default function EnhancedStudentDashboard() {
     };
 
     // Poll every second
-    const intervalId = setInterval(fetchStatus, 10000000);
+    const intervalId = setInterval(fetchStatus, 100000);
 
     // Clean up the interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
-      const getUserDetails = async () => {
-        if (session?.user.studentNo) {
-          const detail = await showUserDetail({ studentNo: session.user.studentNo });
-          // console.log(detail);
-          setUserDetail({
-            Name : detail.userDetail?.Name || "",
-            studentNo : detail.userDetail?.studentNo || 0,
-            _id : detail.userDetail._id
-          });
-          // console.log(userDetail,"harsh")
-        }
+    const getUserDetails = async () => {
+      if (session?.user.studentNo) {
+        const detail = await showUserDetail({ studentNo: session.user.studentNo });
+        setUserDetail({
+          Name: Array.isArray(detail.userDetail) ? detail.userDetail[0]?.Name || "" : detail.userDetail?.Name || "",
+          studentNo: Array.isArray(detail.userDetail) ? detail.userDetail[0]?.studentNo || 0 : detail.userDetail?.studentNo || 0,
+          // @ts-ignore
+          _id: Array.isArray(detail.userDetail) ? detail.userDetail[0]._id : detail.userDetail?._id
+        });
       }
+    };
   
+    if (session?.user.studentNo) {
       getUserDetails();
-    },[])
+    }
+  }, [session]); 
 
 
   useEffect(() => {
@@ -199,15 +203,30 @@ export default function EnhancedStudentDashboard() {
   const handleProjectSubmit = (e: any) => {
     e.preventDefault();
     setIsSubmitted(true);
-    console.log(isSubmitted)
+    // console.log(isSubmitted)
   };
   
   useEffect(() => {
     if (isSubmitted) {
       const submitProject = async () => {
 
+        if(newProject.description.length > 400){
+          toast.error("Description should be less than 400 words!!!");
+          setIsSubmitted(false); 
+          return;
+        }
+
         const task = await saveNewProject(newProject.name , newProject.description , newProject.dueDate)
         // console.log(task);
+        if (typeof task === 'object' && task !== null && 'status' in task && (task as { status: number }).status === 200) {
+            toast.success("Task Successfully Submitted!!", {
+              icon: <FaCheckCircle color="#4CAF50" />
+          })
+        }else{
+          toast.error("Failed to submit task, Task already submitted !!!", {
+            icon: <FaTimesCircle color="#F44336" />
+        });
+        }
         setIsSubmitted(false); 
       } 
       submitProject();
@@ -262,147 +281,168 @@ export default function EnhancedStudentDashboard() {
     showFlaguser();
   },[])
   
+  useEffect(() => {
+    const getProjects = async () => {
+      try {
+        const response = await fetchUserProjects();
+        if (response.status === 200) {
+          setProjects(response.projects);
+        } 
+      } catch (err) {
+        // setError(err.message);
+      }
+    };
+
+    getProjects();
+  }, []);
 
   return (
     <>
       <StudentNavbar />
-    <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Student Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarImage
-                  src="/placeholder-avatar.jpg"
-                  alt={userDetail.Name}
-                />
-                <AvatarFallback>
-                  {userDetail.Name.split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold">{userDetail.Name}</h2>
-                {/* <p className="text-gray-500">{studentData.id}</p> */}
-                <p className="text-gray-500">{userDetail.studentNo}</p>
-                <p className="text-gray-500">2nd year</p>
-                {/* <p className="text-gray-500">{studentData.email}</p> */}
+      <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle>Student Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center space-y-4">
+                <Avatar className="h-32 w-32">
+                  <AvatarImage
+                    src="/placeholder-avatar.jpg"
+                    alt={userDetail.Name}
+                  />
+                  <AvatarFallback>
+                    {userDetail.Name.split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold">{userDetail.Name}</h2>
+                  {/* <p className="text-gray-500">{studentData.id}</p> */}
+                  <p className="text-gray-500">{userDetail.studentNo}</p>
+                  <p className="text-gray-500">2nd year</p>
+                  {/* <p className="text-gray-500">{studentData.email}</p> */}
+                </div>
               </div>
-            </div>
-          </CardContent>
-          <Card className="w-1/2 mb-7 mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">Flag</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Flag className="w-6 h-6 text-yellow-500" />
-              <span className="text-3xl font-bold">{fetchExistingFlag}</span>
-          </div>
-          
-        </div>
-      </CardContent>
-    </Card>
-          <CardFooter className="flex justify-center gap-4">
-            <EditProfilePopup
-              studentData={userDetail}
-              onSave={handleProfileUpdate}
-            />
-            <Button className="bg-red-500 hover:bg-red-600" onClick={() => signOut({ callbackUrl: '/signin', redirect:true })}>Signout</Button>
-          </CardFooter>
-        </Card>
-        <Card className="lg:col-span-2">
-          <Tabs defaultValue="attendance" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="attendance">Attendance</TabsTrigger>
-              {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="stats">Statistics</TabsTrigger>
-            </TabsList>
-            <TabsContent value="attendance">
+            </CardContent>
+            <Card className="w-1/2 mb-7 mx-auto">
               <CardHeader>
-                <CardTitle>Attendance Record</CardTitle>
-                <CardDescription>
-                  Your recent attendance history
-                </CardDescription>
+                <CardTitle className="text-center">Flag</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {currentRecords.map((day, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-2 bg-white rounded-lg shadow"
-                    >
-                      <span className="font-medium">
-                        {formatDate(day.date)}
-                      </span>
-                      <Badge
-                        variant={
-                          day.status === "present" ? "default" : "destructive"
-                        }
-                      >
-                        {day.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                  <Button
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
-                  <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-                <div className="mt-4 flex items-center justify-end">
-                  <Label htmlFor="recordsPerPage" className="mr-2">
-                    Records per page:
-                  </Label>
-                  <Select
-                    value={recordsPerPage.toString()}
-                    onValueChange={(value) => {
-                      setRecordsPerPage(Number(value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-[100px]">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="20">20</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Flag className="w-6 h-6 text-yellow-500" />
+                    <span className="text-3xl font-bold">
+                      {fetchExistingFlag}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
-            </TabsContent>
-            <TabsContent value="projects">
-              <div className="relative">
-                {/* Overlay Screen for Closed Message */}
-                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+            </Card>
+            <CardFooter className="flex justify-center gap-4">
+              <EditProfilePopup
+                studentData={userDetail}
+                onSave={handleProfileUpdate}
+              />
+              <Button
+                className="bg-red-500 hover:bg-red-600"
+                onClick={() =>
+                  signOut({ callbackUrl: "/signin", redirect: true })
+                }
+              >
+                Signout
+              </Button>
+            </CardFooter>
+          </Card>
+          <Card className="lg:col-span-2">
+            <Tabs defaultValue="attendance" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
+                <TabsTrigger value="projects">Projects</TabsTrigger>
+                <TabsTrigger value="stats">Statistics</TabsTrigger>
+              </TabsList>
+              <TabsContent value="attendance">
+                <CardHeader>
+                  <CardTitle>Attendance Record</CardTitle>
+                  <CardDescription>
+                    Your recent attendance history
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentRecords.map((day, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 bg-white rounded-lg shadow"
+                      >
+                        <span className="font-medium">
+                          {formatDate(day.date)}
+                        </span>
+                        <Badge
+                          variant={
+                            day.status === "present" ? "default" : "destructive"
+                          }
+                        >
+                          {day.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-4">
+                    <Button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                  <div className="mt-4 flex items-center justify-end">
+                    <Label htmlFor="recordsPerPage" className="mr-2">
+                      Records per page:
+                    </Label>
+                    <Select
+                      value={recordsPerPage.toString()}
+                      onValueChange={(value) => {
+                        setRecordsPerPage(Number(value));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </TabsContent>
+              <TabsContent value="projects">
+                <div className="">
+                  {/* Overlay Screen for Closed Message */}
+                  {/* <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
                   <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -434,84 +474,85 @@ export default function EnhancedStudentDashboard() {
                       More Information
                     </a>
                   </div>
-                </div>
+                </div> */}
 
-                <CardHeader>
-                  <CardTitle>Projects</CardTitle>
-                  <CardDescription>
-                    Manage your projects and track progress
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="new" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="new">New Project</TabsTrigger>
-                      <TabsTrigger value="ongoing">
+                  <CardHeader>
+                    <CardTitle>Projects</CardTitle>
+                    <CardDescription>
+                      Manage your projects and track progress
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="new" className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="new">New Project</TabsTrigger>
+                        {/* <TabsTrigger value="ongoing">
                         Ongoing Projects
-                      </TabsTrigger>
-                      <TabsTrigger value="completed">
-                        Completed Projects
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="new">
-                      <div className="bg-white p-4 rounded-lg shadow mt-4">
-                        <h3 className="font-semibold text-lg mb-4">
-                          Submit New Project
-                        </h3>
-                        <form
-                          onSubmit={handleProjectSubmit}
-                          className="space-y-4"
-                        >
-                          <div>
-                            <Label htmlFor="projectName">Project Name</Label>
-                            <Input
-                              id="projectName"
-                              value={newProject.name}
-                              onChange={(e) =>
-                                setNewProject({
-                                  ...newProject,
-                                  name: e.target.value,
-                                })
-                              }
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="projectDescription">
-                              Description
-                            </Label>
-                            <Textarea
-                              id="projectDescription"
-                              value={newProject.description}
-                              onChange={(e) =>
-                                setNewProject({
-                                  ...newProject,
-                                  description: e.target.value,
-                                })
-                              }
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="projectDueDate">Due Date</Label>
-                            <Input
-                              id="projectDueDate"
-                              type="date"
-                              value={newProject.dueDate}
-                              onChange={(e) =>
-                                setNewProject({
-                                  ...newProject,
-                                  dueDate: e.target.value,
-                                })
-                              }
-                              required
-                            />
-                          </div>
-                          <Button type="submit">Submit Project</Button>
-                        </form>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="ongoing">
+                      </TabsTrigger> */}
+                        {/* <TabsTrigger value="completed">
+                          Completed Projects
+                        </TabsTrigger> */}
+                      </TabsList>
+                      <TabsContent value="new">
+                        <div className="bg-white p-4 rounded-lg shadow mt-4">
+                          <h3 className="font-semibold text-lg mb-4">
+                            Submit New Project
+                          </h3>
+                          <form
+                            onSubmit={handleProjectSubmit}
+                            className="space-y-4"
+                          >
+                            <div>
+                              <Label htmlFor="projectName">Project Name</Label>
+                              <Input
+                                id="projectName"
+                                value={newProject.name}
+                                onChange={(e) =>
+                                  setNewProject({
+                                    ...newProject,
+                                    name: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="projectDescription">
+                                Description
+                              </Label>
+                              <Textarea
+                                id="projectDescription"
+                                value={newProject.description}
+
+                                onChange={(e) => {
+                                    setNewProject({
+                                      ...newProject,
+                                      description: e.target.value, 
+                                    });
+                                }}
+                                required
+                                />
+                            </div>
+                            <div>
+                              <Label htmlFor="projectDueDate">Due Date</Label>
+                              <Input
+                                id="projectDueDate"
+                                type="date"
+                                value={newProject.dueDate}
+                                onChange={(e) =>
+                                  setNewProject({
+                                    ...newProject,
+                                    dueDate: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <Button type="submit">Submit Project</Button>
+                          </form>
+                        </div>
+                      </TabsContent>
+                      {/* <TabsContent value="ongoing">
                       <div className="space-y-4 mt-4">
                         {projects
                           .filter((project) => project.status !== "Completed")
@@ -574,208 +615,206 @@ export default function EnhancedStudentDashboard() {
                             </Card>
                           ))}
                       </div>
-                    </TabsContent>
-                    <TabsContent value="completed">
-                      <div className="space-y-4 mt-4">
-                        {projects
-                          .filter((project) => project.status === "Completed")
-                          .map((project) => (
-                            <Card key={project.id}>
-                              <CardHeader>
-                                <CardTitle>{project.name}</CardTitle>
-                                <CardDescription>
-                                  {project.description}
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <p>
-                                  <strong>Due Date:</strong> {project.dueDate}
-                                </p>
-                                <p>
-                                  <strong>Status:</strong> {project.status}
-                                </p>
-                                <div className="mt-4">
-                                  <h4 className="font-semibold mb-2">
-                                    Updates
-                                  </h4>
-                                  {project.updates.map((update, index) => (
-                                    <div
-                                      key={index}
-                                      className="bg-gray-100 p-2 rounded mb-2"
-                                    >
-                                      <p className="text-sm text-gray-600">
-                                        {update.date}
+                    </TabsContent> */}
+                      {/* <TabsContent value="completed">
+                        <div className="space-y-4 mt-4 overflow-hidden">
+                          {projects
+                            // .filter((project) => project.status === "Completed")
+                            .map((project) => (
+                              <div key={project.id}>
+                                <Card className="flex w-full items-center justify-center">
+                                  <div>
+                                    <CardHeader>
+                                      <CardTitle className="font-bold">
+                                        {project.title}
+                                      </CardTitle>
+                                      <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
+                                        {project.link}
+                                      </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <p>
+                                        <strong>Completion Date:</strong>{" "}
+                                        {project.submissionDate
+                                          ? project.submissionDate.toLocaleDateString()
+                                          : "N/A"}
                                       </p>
-                                      <p>{update.comment}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </div>
-            </TabsContent>
-            <TabsContent value="stats">
-              <div className="relative">
-
-              
-            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                  <div className="bg-white p-8 w-72 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 text-blue-500 mb-4 mx-auto"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
-                      />
-                    </svg>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Section Unavailable
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                      We're sorry, but this section is currently closed. Please
-                      check back later.
-                    </p>
-                    <a
-                      href="https://bdcoe.co.in/"
-                      target="_blank"
-                      className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                      onClick={() => console.log("More Information")}
-                    >
-                      More Information
-                    </a>
-                  </div>
+                                      <p>
+                                        <strong>Status:</strong> Completed
+                                      </p>
+                                      <div className="mt-4"></div>
+                                    </CardContent>
+                                  </div>
+                                  <FiCheckCircle className="text-green-500 mx-auto text-6xl" />
+                                </Card>
+                              </div>
+                            ))}
+                        </div>
+                      </TabsContent> */}
+                    </Tabs>
+                  </CardContent>
                 </div>
-              <CardHeader>
-                <CardTitle>Attendance Statistics</CardTitle>
-                <CardDescription>
-                  Your overall attendance performance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">
-                      Overall Attendance
-                    </span>
-                    <span className="text-sm font-medium">
-                      {attendancePercentage.toFixed(1)}%
-                    </span>
-                  </div>
-                  <Progress value={attendancePercentage} className="w-full" />
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                      <Book className="mx-auto h-6 w-6 text-blue-500" />
-                      <p className="mt-2 font-semibold">
-                        {studentData.totalClasses}
-                      </p>
-                      <p className="text-sm text-gray-500">Total Classes</p>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                      <CheckCircle className="mx-auto h-6 w-6 text-green-500" />
-                      <p className="mt-2 font-semibold">
-                        {studentData.attendedClasses}
-                      </p>
-                      <p className="text-sm text-gray-500">Classes Attended</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </Card>
-
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Mark Today's Attendance</CardTitle>
-            <CardDescription>
-              {isMounted && currentTime
-                ? new Date(currentTime).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : "Loading..."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row items-center justify-between bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center space-x-4 mb-4 md:mb-0">
-                <Clock className="h-8 w-8 text-blue-500" />
-                <div>
-                  <p className="text-lg font-semibold">Current Time</p>
-                  {isMounted ? (
-                    <p className="text-2xl">
-                      {format(currentTime, "HH:mm:ss")}
-                    </p>
-                  ) : (
-                    <p>Loading...</p>
-                  )}
-                </div>
-              </div>
-              {isAttendanceWindowOpen ? (
-                attendanceMarked ? (
-                  <div className="text-green-600 font-semibold flex items-center">
-                    <CheckCircle className="mr-2" />
-                    Attendance Marked
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    {windowOpen ? (
-                      <Button
-                        onClick={markAttendance}
-                        // disabled={!isPresent}
-                        size="lg"
-                        className="px-8 mb-2"
+              </TabsContent>
+              <TabsContent value="stats">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                    <div className="bg-white p-8 w-72 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-blue-500 mb-4 mx-auto"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
                       >
-                        Mark Attendance
-                      </Button>
-                    ) : (
-                      <div className="text-red-600 font-semibold flex items-center">
-                        <AlertTriangle className="mr-2" />
-                        Attendance Window Closed
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
+                        />
+                      </svg>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Section Unavailable
+                      </h2>
+                      <p className="text-gray-600 mb-6">
+                        We're sorry, but this section is currently closed.
+                        Please check back later.
+                      </p>
+                      <a
+                        href="https://bdcoe.co.in/"
+                        target="_blank"
+                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                        onClick={() => console.log("More Information")}
+                      >
+                        More Information
+                      </a>
+                    </div>
+                  </div>
+                  <CardHeader>
+                    <CardTitle>Attendance Statistics</CardTitle>
+                    <CardDescription>
+                      Your overall attendance performance
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">
+                          Overall Attendance
+                        </span>
+                        <span className="text-sm font-medium">
+                          {attendancePercentage.toFixed(1)}%
+                        </span>
                       </div>
+                      <Progress
+                        value={attendancePercentage}
+                        className="w-full"
+                      />
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="bg-white p-4 rounded-lg shadow text-center">
+                          <Book className="mx-auto h-6 w-6 text-blue-500" />
+                          <p className="mt-2 font-semibold">
+                            {studentData.totalClasses}
+                          </p>
+                          <p className="text-sm text-gray-500">Total Classes</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow text-center">
+                          <CheckCircle className="mx-auto h-6 w-6 text-green-500" />
+                          <p className="mt-2 font-semibold">
+                            {studentData.attendedClasses}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Classes Attended
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Card>
+
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Mark Today's Attendance</CardTitle>
+              <CardDescription>
+                {isMounted && currentTime
+                  ? new Date(currentTime).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Loading..."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row items-center justify-between bg-white p-6 rounded-lg shadow">
+                <div className="flex items-center space-x-4 mb-4 md:mb-0">
+                  <Clock className="h-8 w-8 text-blue-500" />
+                  <div>
+                    <p className="text-lg font-semibold">Current Time</p>
+                    {isMounted ? (
+                      <p className="text-2xl">
+                        {format(currentTime, "HH:mm:ss")}
+                      </p>
+                    ) : (
+                      <p>Loading...</p>
                     )}
-                    {/* <p className="text-sm text-gray-500">
+                  </div>
+                </div>
+                {isAttendanceWindowOpen ? (
+                  attendanceMarked ? (
+                    <div className="text-green-600 font-semibold flex items-center">
+                      <CheckCircle className="mr-2" />
+                      Attendance Marked
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      {windowOpen ? (
+                        <Button
+                          onClick={markAttendance}
+                          // disabled={!isPresent}
+                          size="lg"
+                          className="px-8 mb-2"
+                        >
+                          Mark Attendance
+                        </Button>
+                      ) : (
+                        <div className="text-red-600 font-semibold flex items-center">
+                          <AlertTriangle className="mr-2" />
+                          Attendance Window Closed
+                        </div>
+                      )}
+                      {/* <p className="text-sm text-gray-500">
                       Time left: {timeLeftInMinutes} minute
                       {timeLeftInMinutes !== 1 ? "s" : ""}
                     </p> */}
-                  </div>
-                )
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
+                    </div>
+                  )
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Attendance Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Important Notice</AlertTitle>
-              <AlertDescription>
-                The attendance marking window is open for 10 minutes each day.
-                Please ensure you mark your attendance within this timeframe. If
-                you miss the window, please contact your administrator.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Attendance Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Important Notice</AlertTitle>
+                <AlertDescription>
+                  The attendance marking window is open for 10 minutes each day.
+                  Please ensure you mark your attendance within this timeframe.
+                  If you miss the window, please contact your administrator.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
     </>
   );
 }

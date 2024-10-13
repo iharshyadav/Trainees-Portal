@@ -5,6 +5,7 @@ import AuthProvider from "./context/AuthProvider";
 import { authOptions } from "./api/auth/[...nextauth]/option";
 import { getServerSession } from "next-auth";
 import { Toaster } from 'sonner';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,6 +31,19 @@ export default async function RootLayout({
 
   const session = await getServerSession(authOptions);
 
+  const customToastOptions = {
+    style: {
+      background: '#fff',
+      color: '#000',
+    },
+    success: {
+      icon: <FaCheckCircle color="#4CAF50" />, // Green color for success
+    },
+    error: {
+      icon: <FaTimesCircle color="#F44336" />, // Red color for error
+    },
+  };
+
   return (
     <html lang="en">
       <body
@@ -37,7 +51,7 @@ export default async function RootLayout({
       >
         <AuthProvider session={session} >
            {children}
-           <Toaster />
+           <Toaster position="top-center" theme="light" toastOptions={customToastOptions}/>
         </AuthProvider>
       </body>
     </html>

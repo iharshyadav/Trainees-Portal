@@ -44,7 +44,7 @@ export const showUserDetail = async ({ studentNo }: { studentNo: string }) => {
     
     await ConnectToDB();
 
-    const userDetail = await User.findOne({ studentNo })
+    const userDetail = await User.findOne({ studentNo }).lean();
 
     if (!userDetail) {
       return { message: 'User not found', status: 404 };
@@ -60,7 +60,7 @@ export const showUserDetail = async ({ studentNo }: { studentNo: string }) => {
 export const saveNewProject = async (name : string , description : string , date : string) => {
   
   try {
-    
+
     const session = await getServerSession(authOptions)
     console.log(session)
     if (!session) {
@@ -71,33 +71,39 @@ export const saveNewProject = async (name : string , description : string , date
 
     await ConnectToDB();
 
-    const uniqueName = await User.findOne({projects : {
-      title : name
-    }}).lean();
-
-    if(uniqueName){
-      return {
-        error : "Project Name already exists!! try different name",
-        status : 404
+    const uniqueName = await User.findOne({
+      studentNo: session.user.studentNo
+    });
+    
+    if (uniqueName) {
+      const uniqueProject = uniqueName.projects.find((topic: any) => topic.title === name);
+    
+      if (uniqueProject) {
+        return {
+          error: "Project Name already exists!! Try a different name",
+          status: 404
+        };
       }
     }
-
-    const saveProject = await User.create({
-      projects : {
-        title : name,
-        link : description,
-        submissionDate : date
+    const saveProject = await User.findOneAndUpdate(
+     {studentNo : session.user.studentNo},
+     {
+      $push : {
+        projects : {
+          title : name,
+          link : description,
+          submissionDate : new Date(date)
+        }
       }
-    })
+     },
+     {new : true}
+    ).lean()
 
-     const plain = JSON.parse(JSON.stringify(saveProject));
+    return {saveProject , status : 200};
 
-
-    console.log(plain);
-    return plain;
   } catch (error) {
     console.log(error);
-    return error;
+    return {error , status : 404};
   }
 
 }
@@ -152,3 +158,45 @@ export const showFlaggedUserDetailStudent = async (userId:string | undefined) =>
     return error;
   }
 }
+
+export const fetchUserProjects = async () => {
+  try {
+    const session = await getServerSession(authOptions);
+    console.log(session);
+    if (!session) {
+      return {
+        error: "Please Login",
+        status: 401
+      };
+    }
+
+    await ConnectToDB();
+
+    const user = await User.findOne({
+      studentNo: session.user.studentNo
+    }).lean();
+
+    if (!user) {
+      return {
+        error: "User not found",
+        status: 404
+      };
+    }
+
+    if (Array.isArray(user)) {
+      return {
+        error: "Unexpected user data format",
+        status: 500
+      };
+    }
+
+    return {
+      projects: user?.projects || [],
+      status: 200
+    };
+
+  } catch (error) {
+    console.log(error);
+    return { error, status: 500 };
+  }
+};
