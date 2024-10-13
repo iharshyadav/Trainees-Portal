@@ -222,6 +222,7 @@ export default function EnhancedStudentDashboard() {
             toast.success("Task Successfully Submitted!!", {
               icon: <FaCheckCircle color="#4CAF50" />
           })
+           setNewProject({ name: "", description: "", dueDate: "" })
         }else{
           toast.error("Failed to submit task, Task already submitted !!!", {
             icon: <FaTimesCircle color="#F44336" />
