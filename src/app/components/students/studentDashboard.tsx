@@ -146,7 +146,7 @@ export default function EnhancedStudentDashboard() {
     };
 
     // Poll every second
-    const intervalId = setInterval(fetchStatus, 1000);
+    const intervalId = setInterval(fetchStatus, 10000);
 
     // Clean up the interval on component unmount
     return () => clearInterval(intervalId);
@@ -349,7 +349,7 @@ export default function EnhancedStudentDashboard() {
                 </div>
               </CardContent>
             </Card>
-            <CardFooter className="flex justify-center gap-4 overflow-y-scroll ">
+            <CardFooter className="flex justify-center gap-4 overflow-y-scroll">
               <EditProfilePopup
                 studentData={userDetail}
                 onSave={handleProfileUpdate}
