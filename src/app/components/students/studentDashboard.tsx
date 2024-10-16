@@ -20,8 +20,7 @@ import { fetchUserProjects, saveNewProject, showAttendence, showFlaggedUserDetai
 import { signOut, useSession } from "next-auth/react"
 import StudentNavbar from "./navbar"
 import { toast } from "sonner"
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"
-import { FiCheckCircle } from 'react-icons/fi';
+import ProfilPicture from "./profile/profilePicture"
 
 
 interface userFlagCount {
@@ -298,6 +297,15 @@ export default function EnhancedStudentDashboard() {
     getProjects();
   }, []);
 
+  // useEffect(() => {
+
+  // const d = async () => {
+  //   await Upfate()
+  //   console.log("firstsss")
+  // }
+  // d();
+  // },[])
+
   return (
     <>
       <StudentNavbar />
@@ -309,15 +317,12 @@ export default function EnhancedStudentDashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center space-y-4">
-                <Avatar className="h-32 w-32">
-                  <AvatarImage
-                    src="/placeholder-avatar.jpg"
-                    alt={userDetail.Name}
-                  />
+                <Avatar className="h-56 w-56">
                   <AvatarFallback>
-                    {userDetail.Name.split(" ")
+                    {/* {userDetail.Name.split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("")} */}
+                      <ProfilPicture />
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center">
@@ -344,7 +349,7 @@ export default function EnhancedStudentDashboard() {
                 </div>
               </CardContent>
             </Card>
-            <CardFooter className="flex justify-center gap-4">
+            <CardFooter className="flex justify-center gap-4 overflow-y-scroll ">
               <EditProfilePopup
                 studentData={userDetail}
                 onSave={handleProfileUpdate}
@@ -445,38 +450,38 @@ export default function EnhancedStudentDashboard() {
                 <div className="relative">
                   {/* Overlay Screen for Closed Message */}
                   <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                  <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 text-blue-500 mb-4 mx-auto"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
-                      />
-                    </svg>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Portal Closed
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                      We're sorry, but the portal is currently closed. Please
-                      check back later.
-                    </p>
-                    <a
-                      href="https://bdcoe.co.in/"
-                      target="_blank"
-                      className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                      onClick={() => console.log("More Information")}
-                    >
-                      More Information
-                    </a>
+                    <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-blue-500 mb-4 mx-auto"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
+                        />
+                      </svg>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Portal Closed
+                      </h2>
+                      <p className="text-gray-600 mb-6">
+                        We're sorry, but the portal is currently closed. Please
+                        check back later.
+                      </p>
+                      <a
+                        href="https://bdcoe.co.in/"
+                        target="_blank"
+                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                        onClick={() => console.log("More Information")}
+                      >
+                        More Information
+                      </a>
+                    </div>
                   </div>
-                </div>
 
                   <CardHeader>
                     <CardTitle>Projects</CardTitle>
@@ -525,15 +530,14 @@ export default function EnhancedStudentDashboard() {
                               <Textarea
                                 id="projectDescription"
                                 value={newProject.description}
-
                                 onChange={(e) => {
-                                    setNewProject({
-                                      ...newProject,
-                                      description: e.target.value, 
-                                    });
+                                  setNewProject({
+                                    ...newProject,
+                                    description: e.target.value,
+                                  });
                                 }}
                                 required
-                                />
+                              />
                             </div>
                             <div>
                               <Label htmlFor="projectDueDate">Due Date</Label>

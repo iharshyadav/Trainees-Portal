@@ -7,13 +7,15 @@ declare module 'next-auth' {
         isVerified ? : boolean;
         studentNo? : string;
         role ? : string
+        Name ? : string
     }
     interface Session {
         user : {
             _id?:string ;
             isVerified ? : boolean;
             studentNo? : string;
-            role ?: string
+            role ?: string;
+            Name ? : string
         } & DefaultSession['user']
     }
 }

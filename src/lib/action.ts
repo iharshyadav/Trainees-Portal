@@ -6,6 +6,7 @@ import Attendance from "./models/attendance.model"
 import { ConnectToDB } from "./db"
 import { User } from "./models/user.model"
 import FlagUsers from "./models/flag.model"
+import ProfileImages from "./models/userImage"
 
 export const showAttendence = async () => {
 
@@ -198,5 +199,63 @@ export const fetchUserProjects = async () => {
   } catch (error) {
     console.log(error);
     return { error, status: 500 };
+  }
+};
+
+export const onUpload = async (image: string) => {
+  try {
+    const session = await getServerSession(authOptions);
+    console.log(session);
+    if (!session) {
+      return {
+        error: "Please Login",
+        status: 401
+      };
+    }
+
+    // console.log(session.user.name , "dvsvsw")
+    
+    await ConnectToDB();
+    
+    let user = await ProfileImages.findOne({ userId: session?.user.studentNo }).lean();
+
+    if (!user) {
+      user = await ProfileImages.create({
+        userId: session?.user.studentNo,
+        name : session?.user.name,
+        profileImage: image
+      });
+      
+      if (Array.isArray(user)) {
+        return user[0].toObject();
+      }
+    
+      return user ? user.toObject() : null; 
+    }
+
+    const updateUser = await ProfileImages.findOneAndUpdate(
+      { userId: session?.user.studentNo },
+      { profileImage: image },
+      { new: true }
+    ).lean();
+
+    return updateUser;
+  } catch (error) {
+    console.error("Failed to upload profile image:", error);
+    throw new Error("Failed to upload profile image");
+  }
+};
+
+export const showProfile = async (studentNo: string | undefined) => {
+  try {
+    await ConnectToDB();
+    const userImages = await ProfileImages.findOne({
+      userId: studentNo,
+    }).lean();
+
+    return userImages && !Array.isArray(userImages) ? userImages.profileImage : null;
+  } catch (error) {
+    console.error("Failed to fetch user image:", error);
+    throw new Error("Failed to fetch user image");
   }
 };

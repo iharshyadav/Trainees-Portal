@@ -7,6 +7,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { students } from "@/lib/constants"
+import dynamic from "next/dynamic"
+import { onUpload } from "@/lib/action"
+import ProfilPicture from "./profile/profilePicture"
+
+const UploadCareButtonNoSSR = dynamic(() => import('./profile/uploadProfilePicture'), {
+  ssr: false,
+});
 
 interface StudentData {
   Name: string
@@ -41,14 +48,24 @@ export function EditProfilePopup({ studentData, onSave }: EditProfilePopupProps)
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Student Profile</DialogTitle>
-          <DialogDescription>Update the student's information below.</DialogDescription>
+          <DialogDescription>
+            Update the student's information below.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSave} className="flex flex-col space-y-4">
+         <div className="w-full flex flex-col items-center gap-4 justify-center">
+         <Avatar className="sm:w-1/2 sm:h-[30vh] h-[30vh] w-3/4">
+            <AvatarFallback>
+              <ProfilPicture />
+            </AvatarFallback>
+          </Avatar>
+          <UploadCareButtonNoSSR onUpload={onUpload} />
+         </div>
           <div className="flex flex-col md:flex-row md:space-x-4">
             <div className="flex-1">
               <Label htmlFor="name">Name</Label>
               <Input
-              disabled
+                disabled
                 id="name"
                 value={studentData.Name}
                 // onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
@@ -88,5 +105,5 @@ export function EditProfilePopup({ studentData, onSave }: EditProfilePopupProps)
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
