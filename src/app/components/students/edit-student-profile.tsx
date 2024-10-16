@@ -54,7 +54,7 @@ export function EditProfilePopup({ studentData, onSave }: EditProfilePopupProps)
         </DialogHeader>
         <form onSubmit={handleSave} className="flex flex-col space-y-4">
          <div className="w-full flex flex-col items-center gap-4 justify-center">
-         <Avatar className="sm:w-1/2 sm:h-[30vh] h-[30vh] w-3/4">
+         <Avatar className="sm:w-1/2 sm:h-[32vh] h-[30vh] w-3/4">
             <AvatarFallback>
               <ProfilPicture />
             </AvatarFallback>
