@@ -32,31 +32,6 @@ export const showAttendence = async () => {
 
 }
 
-export const showUserDetail = async ({ studentNo }: { studentNo: string }) => {
-  try {
-    
-    const session = await getServerSession(authOptions)
-    // console.log(session)
-    if (!session) {
-      return {
-        error : "Please Login"
-      }
-    }
-    
-    await ConnectToDB();
-
-    const userDetail = await User.findOne({ studentNo }).lean();
-
-    if (!userDetail) {
-      return { message: 'User not found', status: 404 };
-    }
-
-    return { userDetail, status: 200 }; 
-  } catch (error) {
-    return { error: 'Internal Server Error', status: 500 };
-  }
-};
-
 
 export const saveNewProject = async (name : string , description : string , date : string) => {
   

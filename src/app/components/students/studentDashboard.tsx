@@ -1,55 +1,80 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { CalendarDays, User, CheckCircle, Book, BarChart2, Clock, AlertTriangle, Upload, MessageSquare, ChevronLeft, ChevronRight, Flag } from "lucide-react"
-import { format, parseISO, isToday, differenceInMinutes } from "date-fns"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { EditProfilePopup } from "./edit-student-profile"
-import axios from "axios"
-import { fetchUserProjects, saveNewProject, showAttendence, showFlaggedUserDetail, showFlaggedUserDetailStudent, showUserDetail } from "@/lib/action"
-import { signOut, useSession } from "next-auth/react"
-import StudentNavbar from "./navbar"
-import { toast } from "sonner"
-import ProfilPicture from "./profile/profilePicture"
-
+import { useState, useEffect, useCallback } from "react";
+import {
+  CalendarDays,
+  User,
+  CheckCircle,
+  Book,
+  BarChart2,
+  Clock,
+  AlertTriangle,
+  Upload,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+} from "lucide-react";
+import { format, parseISO, isToday, differenceInMinutes } from "date-fns";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { EditProfilePopup } from "./edit-student-profile";
+import axios from "axios";
+import {
+  fetchUserProjects,
+  saveNewProject,
+  showAttendence,
+  showFlaggedUserDetail,
+  showFlaggedUserDetailStudent
+} from "@/lib/action";
+import { signOut, useSession } from "next-auth/react";
+import StudentNavbar from "./navbar";
+import { toast } from "sonner";
+import ProfilPicture from "./profile/profilePicture";
+import { FiCheckCircle } from "react-icons/fi";
+import { FaTimesCircle } from "react-icons/fa";
 
 interface userFlagCount {
-  flagCount : number | null
+  flagCount: number | null;
 }
 
 const initialStudentData = {
-    name: "John Doe",
-    id: "S12345",
-    course: "Computer Science",
-    email: "john.doe@example.com",
-    year: "3rd Year",
-    totalClasses: 100,
-    attendedClasses: 85,
-  }
-
-const attendanceData = [
-  { date: "2023-05-01", status: "Present" },
-  { date: "2023-05-02", status: "Absent" },
-  { date: "2023-05-03", status: "Present" },
-  { date: "2023-05-04", status: "Present" },
-  { date: "2023-05-05", status: "Absent" },
-  { date: "2023-05-06", status: "Present" },
-  { date: "2023-05-07", status: "Present" },
-]
+  name: "John Doe",
+  id: "S12345",
+  course: "Computer Science",
+  email: "john.doe@example.com",
+  year: "3rd Year",
+  totalClasses: 100,
+  attendedClasses: 85,
+};
 
 // Simulated attendance window (10 minutes from now)
-const attendanceWindowStart = new Date()
-const attendanceWindowEnd = new Date(attendanceWindowStart.getTime() + 10 * 60000)
+const attendanceWindowStart = new Date();
+const attendanceWindowEnd = new Date(
+  attendanceWindowStart.getTime() + 10 * 60000
+);
 
 // Mock project data
 const projectData = [
@@ -72,76 +97,98 @@ const projectData = [
     status: "Not Started",
     updates: [],
   },
-]
+];
 
 export default function EnhancedStudentDashboard() {
-  const [attendanceMarked, setAttendanceMarked] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [isAttendanceWindowOpen, setIsAttendanceWindowOpen] = useState(true)
-  const [projects, setProjects] = useState(projectData)
-  const [newProject, setNewProject] = useState({ name: "", description: "", dueDate: "" })
-  const [selectedProject, setSelectedProject] = useState<{ id: number; name: string; description: string; dueDate: string; status: string; updates: { date: string; comment: string }[] } | null>(null)
-  const [newUpdate, setNewUpdate] = useState("")
-  const [studentData, setStudentData] = useState(initialStudentData)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [recordsPerPage, setRecordsPerPage] = useState(10)
-  const [attendanceData, setAttendanceData] = useState<{ date: string; status: string }[]>([])
-  const [isMounted, setIsMounted] = useState(false)
-  const [userDetail, setUserDetail] = useState<{ Name: string  , studentNo : number , _id : string}>({
-    Name: "", studentNo : 0 , _id : ""
-  })
+  const [attendanceMarked, setAttendanceMarked] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isAttendanceWindowOpen, setIsAttendanceWindowOpen] = useState(true);
+  const [projects, setProjects] = useState(projectData);
+  const [newProject, setNewProject] = useState({
+    name: "",
+    description: "",
+    dueDate: "",
+  });
+  const [selectedProject, setSelectedProject] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    dueDate: string;
+    status: string;
+    updates: { date: string; comment: string }[];
+  } | null>(null);
+  const [newUpdate, setNewUpdate] = useState("");
+  const [studentData, setStudentData] = useState(initialStudentData);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [attendanceData, setAttendanceData] = useState<
+    { date: string; status: string }[]
+  >([]);
+  const [isMounted, setIsMounted] = useState(false);
+  const [userDetail, setUserDetail] = useState<{
+    Name: string;
+    studentNo: number;
+    _id: string;
+  }>({
+    Name: "",
+    studentNo: 0,
+    _id: "",
+  });
   const [windowOpen, setWindowOpen] = useState<boolean | null>(null);
-  const [fetchExistingFlag, setfetchExistingFlag] = useState<number | null>(0)
-  
-  const {data : session} = useSession();
+  const [fetchExistingFlag, setfetchExistingFlag] = useState<number | null>(0);
+  const [submittedProjects, setSubmittedProjects] = useState<any[]>([]);
+  const { data: session } = useSession();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [totalClasses, setTotalClasses] = useState(0);
+  const [totalPresent, setTotalPresent] = useState(0);
+  const [attendancePercentage, setAttendancePercentage] = useState(0);
+  const [name, setName] = useState("");
+  const [studentno, setStudentNo] = useState("");
 
   // console.log(session,"wwedwedd")
 
   useEffect(() => {
-    setIsMounted(true) 
-  }, [])
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (!isMounted) return; 
+    if (!isMounted) return;
     const timer = setInterval(() => {
-      const now = new Date()
-      setCurrentTime(now)
+      const now = new Date();
+      setCurrentTime(now);
       if (now >= attendanceWindowEnd) {
-        setIsAttendanceWindowOpen(false)
-        clearInterval(timer)
+        setIsAttendanceWindowOpen(false);
+        clearInterval(timer);
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [attendanceWindowEnd , isMounted])
+    return () => clearInterval(timer);
+  }, [attendanceWindowEnd, isMounted]);
 
-  
-  const markAttendance = useCallback( async () => {
-    
-    await axios.post("/api/mark-attendance")
-    .then((data) => {
-      // console.log(data)
-    })
-    .catch((err) => console.log(err))
-    setAttendanceMarked(true)
-    
-  },[attendanceMarked])
+  const markAttendance = useCallback(async () => {
+    await axios
+      .post("/api/mark-attendance")
+      .then((data) => {
+        // console.log(data)
+      })
+      .catch((err) => console.log(err));
+    setAttendanceMarked(true);
+  }, [attendanceMarked]);
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('/api/checkStatusAttendance'); // Adjust the API route as necessary
+        const response = await fetch("/api/checkStatusAttendance"); // Adjust the API route as necessary
         const data = await response.json();
 
         if (response.status === 200) {
           setWindowOpen(true);
         } else {
           setWindowOpen(false);
-          console.error('Failed to fetch status:', data.error);
+          console.error("Failed to fetch status:", data.error);
         }
       } catch (error) {
-        console.error('Error fetching attendance status:', error);
+        console.error("Error fetching attendance status:", error);
       }
     };
 
@@ -155,36 +202,60 @@ export default function EnhancedStudentDashboard() {
   useEffect(() => {
     const getUserDetails = async () => {
       if (session?.user.studentNo) {
-        const detail = await showUserDetail({ studentNo: session.user.studentNo });
-        setUserDetail({
-          Name: Array.isArray(detail.userDetail) ? detail.userDetail[0]?.Name || "" : detail.userDetail?.Name || "",
-          studentNo: Array.isArray(detail.userDetail) ? detail.userDetail[0]?.studentNo || 0 : detail.userDetail?.studentNo || 0,
-          // @ts-ignore
-          _id: Array.isArray(detail.userDetail) ? detail.userDetail[0]._id : detail.userDetail?._id
-        });
+        try {
+          const response = await fetch('/api/user-detail', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentNo: session.user.studentNo }),
+          });
+  
+          const detail = await response.json();
+  
+          if (response.status === 200) {
+            const stuname = detail.userDetail?.Name;
+            const stuno = detail.userDetail?.studentNo;
+            setName(stuname ?? "");
+            setStudentNo(stuno ?? "");
+          } else {
+            // Handle error cases
+            console.error(detail.error || detail.message);
+          }
+        } catch (err:any) {
+          // Handle fetch error
+          console.error(err.message);
+        }
       }
     };
   
     if (session?.user.studentNo) {
       getUserDetails();
     }
-  }, [session]); 
-
+  }, [session]);
+  
 
   useEffect(() => {
     const fetchAttendance = async () => {
       const data = await showAttendence();
       if (Array.isArray(data)) {
-        setAttendanceData(prevData => {
-          const newData = data.map(item => ({
+        setAttendanceData((prevData) => {
+          const newData = data.map((item) => ({
             date: item.date,
-            status: item.status
+            status: item.status,
           }));
-          const uniqueData = Array.from(new Set([...prevData, ...newData].map(item => item.date)))
-            .map(date => {
-              return [...prevData, ...newData].find(item => item.date === date);
+          const uniqueData = Array.from(
+            new Set([...prevData, ...newData].map((item) => item.date))
+          )
+            .map((date) => {
+              return [...prevData, ...newData].find(
+                (item) => item.date === date
+              );
             })
-            .filter((item): item is { date: string; status: string } => item !== undefined);
+            .filter(
+              (item): item is { date: string; status: string } =>
+                item !== undefined
+            );
           return uniqueData;
         });
       } else {
@@ -193,118 +264,124 @@ export default function EnhancedStudentDashboard() {
     };
 
     fetchAttendance();
-  },[])
+  }, []);
 
-  const attendancePercentage = (studentData.attendedClasses / studentData.totalClasses) * 100
-  // const timeLeftInMinutes = Math.max(0, differenceInMinutes(attendanceWindowEnd, currentTime))
 
-  
   const handleProjectSubmit = (e: any) => {
     e.preventDefault();
     setIsSubmitted(true);
-    // console.log(isSubmitted)
+     console.log(isSubmitted)
   };
-  
+
   useEffect(() => {
     if (isSubmitted) {
-      // const submitProject = async () => {
-
-      //   if(newProject.description.length > 500){
-      //     toast.error("Description should be less than 500 words!!!");
-      //     setIsSubmitted(false); 
-      //     return;
-      //   }
-
-      //   const task = await saveNewProject(newProject.name , newProject.description , newProject.dueDate)
-      //   // console.log(task);
-      //   if (typeof task === 'object' && task !== null && 'status' in task && (task as { status: number }).status === 200) {
-      //       toast.success("Task Successfully Submitted!!", {
-      //         icon: <FaCheckCircle color="#4CAF50" />
-      //     })
-      //      setNewProject({ name: "", description: "", dueDate: "" })
-      //   }else{
-      //     toast.error("Failed to submit task, Task already submitted !!!", {
-      //       icon: <FaTimesCircle color="#F44336" />
-      //   });
-      //   }
-      //   setIsSubmitted(false); 
-      // } 
-      // submitProject();
-      toast.error("portal closed")
+      const submitProject = async () => {
+        if (newProject.description.length > 1000) {
+          toast.error("Description should be less than 500 words!!!");
+          setIsSubmitted(false);
+          return;
+        }
+         console.log("here krish")
+        const task = await saveNewProject(
+          newProject.name,
+          newProject.description,
+          newProject.dueDate
+        );
+         console.log(task);
+        if (
+          typeof task === "object" &&
+          task !== null &&
+          "status" in task &&
+          (task as { status: number }).status === 200
+        ) {
+          toast.success("Task Successfully Submitted!!", {
+            icon: <FiCheckCircle color="#4CAF50" />,
+          });
+          setNewProject({ name: "", description: "", dueDate: "" });
+        } else {
+          toast.error("Failed to submit task, Task already submitted !!!", {
+            icon: <FaTimesCircle color="#F44336" />,
+          });
+        }
+        setIsSubmitted(false);
+      };
+      submitProject();
+      // toast.error("portal closed");
     }
   }, [isSubmitted]);
 
+  const handleProfileUpdate = (updatedData: any) => {
+    setStudentData(updatedData);
+  };
 
-  // const handleProjectSubmit = (e:any) => {
-  //   e.preventDefault()
-  //   // setProjects([...projects, { ...newProject, id: projects.length + 1, status: "Not Started", updates: [] }])
-  //   // setNewProject({ name: "", description: "", dueDate: "" })
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = attendanceData.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+  const totalPages = Math.ceil(attendanceData.length / recordsPerPage);
 
+  useEffect(() => {
+    if (attendanceData && attendanceData.length > 0) {
+      const totalClasses = attendanceData.length;
+      const totalPresent = attendanceData.filter(
+        (record) => record.status === "present"
+      ).length;
+      const attendancePercentage = (totalPresent / totalClasses) * 100;
+      console.log(totalClasses, totalPresent, attendancePercentage);
 
-  // }
-
-  const handleProjectUpdate = (e:any) => {
-    e.preventDefault()
-    if (selectedProject && newUpdate) {
-      const updatedProjects = projects.map(project => 
-        project.id === selectedProject.id 
-          ? { ...project, updates: [...project.updates, { date: format(new Date(), 'yyyy-MM-dd'), comment: newUpdate }] }
-          : project
-      )
-      setProjects(updatedProjects)
-      setNewUpdate("")
+      setTotalClasses(totalClasses);
+      setTotalPresent(totalPresent);
+      setAttendancePercentage(parseFloat(attendancePercentage.toFixed(2))); // To keep two decimal places
     }
-  }
+  }, [attendanceData]);
 
-  const handleProfileUpdate = (updatedData:any) => {
-    setStudentData(updatedData)
-  }
-
-  const indexOfLastRecord = currentPage * recordsPerPage
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage
-  const currentRecords = attendanceData.slice(indexOfFirstRecord, indexOfLastRecord)
-  const totalPages = Math.ceil(attendanceData.length / recordsPerPage)
-
-  const paginate = (pageNumber:any) => setCurrentPage(pageNumber)
+  const paginate = (pageNumber: any) => setCurrentPage(pageNumber);
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   useEffect(() => {
     const showFlaguser = async () => {
       // console.log(userDetail._id,"kakak")
-      const user = await showFlaggedUserDetailStudent(session?.user.studentNo) as userFlagCount | null;
-          // console.log(user[0]?.flagCount),"kjhkkn";
-          setfetchExistingFlag(user?.flagCount ?? 0)
-    }
+      const user = (await showFlaggedUserDetailStudent(
+        session?.user.studentNo
+      )) as userFlagCount | null;
+      // console.log(user[0]?.flagCount),"kjhkkn";
+      setfetchExistingFlag(user?.flagCount ?? 0);
+    };
     showFlaguser();
-  },[])
-  
+  }, []);
+
   useEffect(() => {
     const getProjects = async () => {
       try {
-        const response = await fetchUserProjects();
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+  
         if (response.status === 200) {
-          setProjects(response.projects);
-        } 
-      } catch (err) {
-        // setError(err.message);
+          setSubmittedProjects(data.projects);
+        } else {
+          // Handle error cases
+          console.error(data.error);
+        }
+      } catch (err:any) {
+        // Handle fetch error
+        toast.error("Failed to fetch projects");
+        console.error(err.message);
       }
     };
-
+  
     getProjects();
-  }, []);
-
-  // useEffect(() => {
-
-  // const d = async () => {
-  //   await Upfate()
-  //   console.log("firstsss")
-  // }
-  // d();
-  // },[])
+  }, [isSubmitted]);
+  
 
   return (
     <>
@@ -322,13 +399,13 @@ export default function EnhancedStudentDashboard() {
                     {/* {userDetail.Name.split(" ")
                       .map((n) => n[0])
                       .join("")} */}
-                      <ProfilPicture />
+                    <ProfilPicture />
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center">
-                  <h2 className="text-2xl font-semibold">{userDetail.Name}</h2>
+                  <h2 className="text-2xl font-semibold">{name}</h2>
                   {/* <p className="text-gray-500">{studentData.id}</p> */}
-                  <p className="text-gray-500">{userDetail.studentNo}</p>
+                  <p className="text-gray-500">{studentno}</p>
                   <p className="text-gray-500">2nd year</p>
                   {/* <p className="text-gray-500">{studentData.email}</p> */}
                 </div>
@@ -447,255 +524,146 @@ export default function EnhancedStudentDashboard() {
                 </CardContent>
               </TabsContent>
               <TabsContent value="projects">
-                <div className="relative">
-                  {/* Overlay Screen for Closed Message */}
-                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 text-blue-500 mb-4 mx-auto"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
-                        />
-                      </svg>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        Portal Closed
-                      </h2>
-                      <p className="text-gray-600 mb-6">
-                        We're sorry, but the portal is currently closed. Please
-                        check back later.
-                      </p>
-                      <a
-                        href="https://bdcoe.co.in/"
-                        target="_blank"
-                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                        onClick={() => console.log("More Information")}
-                      >
-                        More Information
-                      </a>
-                    </div>
+      <div className="relative">
+        <CardHeader>
+          <CardTitle>Projects</CardTitle>
+          <CardDescription>Manage your projects and track progress</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="new">New Project</TabsTrigger>
+              <TabsTrigger value="submitted">Submitted Projects</TabsTrigger>
+            </TabsList>
+            <TabsContent value="new">
+              <div className="bg-white p-4 rounded-lg shadow mt-4 relative">
+                {/* Overlay for New Project section */}
+                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                  <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-10 w-10 text-blue-500 mb-4 mx-auto"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
+                      />
+                    </svg>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Portal Closed
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                      We're sorry, but the portal is currently closed. Please
+                      check back later.
+                    </p>
+                    <a
+                      href="https://bdcoe.co.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                      onClick={() => console.log("More Information")}
+                    >
+                      More Information
+                    </a>
                   </div>
-
-                  <CardHeader>
-                    <CardTitle>Projects</CardTitle>
-                    <CardDescription>
-                      Manage your projects and track progress
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="new" className="w-full">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="new">New Project</TabsTrigger>
-                        {/* <TabsTrigger value="ongoing">
-                        Ongoing Projects
-                      </TabsTrigger> */}
-                        {/* <TabsTrigger value="completed">
-                          Completed Projects
-                        </TabsTrigger> */}
-                      </TabsList>
-                      <TabsContent value="new">
-                        <div className="bg-white p-4 rounded-lg shadow mt-4">
-                          <h3 className="font-semibold text-lg mb-4">
-                            Submit New Project
-                          </h3>
-                          <form
-                            onSubmit={handleProjectSubmit}
-                            className="space-y-4"
-                          >
-                            <div>
-                              <Label htmlFor="projectName">Project Name</Label>
-                              <Input
-                                id="projectName"
-                                value={newProject.name}
-                                onChange={(e) =>
-                                  setNewProject({
-                                    ...newProject,
-                                    name: e.target.value,
-                                  })
-                                }
-                                required
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="projectDescription">
-                                Description
-                              </Label>
-                              <Textarea
-                                id="projectDescription"
-                                value={newProject.description}
-                                onChange={(e) => {
-                                  setNewProject({
-                                    ...newProject,
-                                    description: e.target.value,
-                                  });
-                                }}
-                                required
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="projectDueDate">Due Date</Label>
-                              <Input
-                                id="projectDueDate"
-                                type="date"
-                                value={newProject.dueDate}
-                                onChange={(e) =>
-                                  setNewProject({
-                                    ...newProject,
-                                    dueDate: e.target.value,
-                                  })
-                                }
-                                required
-                              />
-                            </div>
-                            <Button type="submit">Submit Project</Button>
-                          </form>
-                        </div>
-                      </TabsContent>
-                      {/* <TabsContent value="ongoing">
-                      <div className="space-y-4 mt-4">
-                        {projects
-                          .filter((project) => project.status !== "Completed")
-                          .map((project) => (
-                            <Card key={project.id}>
-                              <CardHeader>
-                                <CardTitle>{project.name}</CardTitle>
-                                <CardDescription>
-                                  {project.description}
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <p>
-                                  <strong>Due Date:</strong> {project.dueDate}
-                                </p>
-                                <p>
-                                  <strong>Status:</strong> {project.status}
-                                </p>
-                                <div className="mt-4">
-                                  <h4 className="font-semibold mb-2">
-                                    Updates
-                                  </h4>
-                                  {project.updates.map((update, index) => (
-                                    <div
-                                      key={index}
-                                      className="bg-gray-100 p-2 rounded mb-2"
-                                    >
-                                      <p className="text-sm text-gray-600">
-                                        {update.date}
-                                      </p>
-                                      <p>{update.comment}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                              <CardFooter>
-                                <form
-                                  onSubmit={handleProjectUpdate}
-                                  className="w-full"
-                                >
-                                  <div className="flex items-center space-x-2">
-                                    <Input
-                                      value={newUpdate}
-                                      onChange={(e) =>
-                                        setNewUpdate(e.target.value)
-                                      }
-                                      placeholder="Add an update..."
-                                    />
-                                    <Button
-                                      type="submit"
-                                      onClick={() =>
-                                        setSelectedProject(project)
-                                      }
-                                    >
-                                      Update
-                                    </Button>
-                                  </div>
-                                </form>
-                              </CardFooter>
-                            </Card>
-                          ))}
-                      </div>
-                    </TabsContent> */}
-                      {/* <TabsContent value="completed">
-                        <div className="space-y-4 mt-4 overflow-hidden">
-                          {projects
-                            // .filter((project) => project.status === "Completed")
-                            .map((project) => (
-                              <div key={project.id}>
-                                <Card className="flex w-full items-center justify-center">
-                                  <div>
-                                    <CardHeader>
-                                      <CardTitle className="font-bold">
-                                        {project.title}
-                                      </CardTitle>
-                                      <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
-                                        {project.link}
-                                      </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                      <p>
-                                        <strong>Completion Date:</strong>{" "}
-                                        {project.submissionDate
-                                          ? project.submissionDate.toLocaleDateString()
-                                          : "N/A"}
-                                      </p>
-                                      <p>
-                                        <strong>Status:</strong> Completed
-                                      </p>
-                                      <div className="mt-4"></div>
-                                    </CardContent>
-                                  </div>
-                                  <FiCheckCircle className="text-green-500 mx-auto text-6xl" />
-                                </Card>
-                              </div>
-                            ))}
-                        </div>
-                      </TabsContent> */}
-                    </Tabs>
-                  </CardContent>
                 </div>
-              </TabsContent>
+                <h3 className="font-semibold text-lg mb-4">
+                  Submit New Project
+                </h3>
+                <form
+                  onSubmit={handleProjectSubmit}
+                  className="space-y-4"
+                >
+                  <div>
+                    <Label htmlFor="projectName">Project Name</Label>
+                    <Input
+                      id="projectName"
+                      value={newProject.name}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="projectDescription">
+                      Description
+                    </Label>
+                    <Textarea
+                      id="projectDescription"
+                      value={newProject.description}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          description: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="projectDueDate">Submission Date</Label>
+                    <Input
+                      id="projectDueDate"
+                      type="date"
+                      value={newProject.dueDate}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          dueDate: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <Button type="submit">Submit Project</Button>
+                </form>
+              </div>
+            </TabsContent>
+            <TabsContent value="submitted">
+              <div className="space-y-4 mt-4 overflow-hidden">
+                {submittedProjects.map((project) => (
+                  <Card
+                    key={project._id}
+                    className="flex w-full items-center justify-between"
+                  >
+                    <div className="flex-grow">
+                      <CardHeader>
+                        <CardTitle className="font-bold">
+                          {project.title}
+                        </CardTitle>
+                        <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
+                          {project.link}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>
+                          <strong>Submission Date:</strong>{" "}
+                          {new Date(project.submissionDate).toLocaleDateString()}
+                        </p>
+                      </CardContent>
+                    </div>
+                    <CardFooter>
+                      <FiCheckCircle className="text-green-500 text-3xl mr-4" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </div>
+    </TabsContent>
               <TabsContent value="stats">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 w-72 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 text-blue-500 mb-4 mx-auto"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
-                        />
-                      </svg>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        Section Unavailable
-                      </h2>
-                      <p className="text-gray-600 mb-6">
-                        We're sorry, but this section is currently closed.
-                        Please check back later.
-                      </p>
-                      <a
-                        href="https://bdcoe.co.in/"
-                        target="_blank"
-                        className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                        onClick={() => console.log("More Information")}
-                      >
-                        More Information
-                      </a>
-                    </div>
-                  </div>
                   <CardHeader>
                     <CardTitle>Attendance Statistics</CardTitle>
                     <CardDescription>
@@ -719,21 +687,24 @@ export default function EnhancedStudentDashboard() {
                       <div className="grid grid-cols-2 gap-4 mt-4">
                         <div className="bg-white p-4 rounded-lg shadow text-center">
                           <Book className="mx-auto h-6 w-6 text-blue-500" />
-                          <p className="mt-2 font-semibold">
-                            {studentData.totalClasses}
+                          <p className="mt-2 font-semibold">{totalClasses}</p>
+                          <p className="text-sm text-gray-500">
+                            Total Sessions
                           </p>
-                          <p className="text-sm text-gray-500">Total Classes</p>
                         </div>
                         <div className="bg-white p-4 rounded-lg shadow text-center">
                           <CheckCircle className="mx-auto h-6 w-6 text-green-500" />
-                          <p className="mt-2 font-semibold">
-                            {studentData.attendedClasses}
-                          </p>
+                          <p className="mt-2 font-semibold">{totalPresent}</p>
                           <p className="text-sm text-gray-500">
-                            Classes Attended
+                            Session Attended
                           </p>
-                        </div>
-                      </div>
+                        </div>  
+                      <div className="bg-white p-4 rounded-lg shadow text-center">
+                      <FileText className="mx-auto h-6 w-6 text-purple-500" />
+                      <p className="mt-2 font-semibold">{projects.length}</p>
+                      <p className="text-sm text-gray-500">Projects Submitted</p>
+                    </div>
+                    </div>
                     </div>
                   </CardContent>
                 </div>

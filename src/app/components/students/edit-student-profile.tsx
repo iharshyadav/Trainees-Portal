@@ -61,7 +61,7 @@ export function EditProfilePopup({ studentData, onSave }: EditProfilePopupProps)
           </Avatar>
           <UploadCareButtonNoSSR onUpload={onUpload} />
          </div>
-          <div className="flex flex-col md:flex-row md:space-x-4">
+          {/* <div className="flex flex-col md:flex-row md:space-x-4">
             <div className="flex-1">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -85,7 +85,7 @@ export function EditProfilePopup({ studentData, onSave }: EditProfilePopupProps)
                 required
               />
             </div>
-          </div>
+          </div> */}
           <div className="flex flex-col md:flex-row md:space-x-4">
             <div className="flex-1">
               <Label htmlFor="year">Year</Label>
