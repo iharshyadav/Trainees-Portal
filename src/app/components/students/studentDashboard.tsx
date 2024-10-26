@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flag,
+ Github, Code, Coffee, Terminal
 } from "lucide-react";
 import { format, parseISO, isToday, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,13 @@ const initialStudentData = {
   totalClasses: 100,
   attendedClasses: 85,
 };
+
+interface ProfileLinks {
+  github: string
+  leetcode: string
+  codechef: string
+  codeforces: string
+}
 
 // Simulated attendance window (10 minutes from now)
 const attendanceWindowStart = new Date();
@@ -134,6 +142,12 @@ export default function EnhancedStudentDashboard() {
     studentNo: 0,
     _id: "",
   });
+  const [profileLinks, setProfileLinks] = useState<ProfileLinks>({
+    github: '',
+    leetcode: '',
+    codechef: '',
+    codeforces: ''
+  })
   const [windowOpen, setWindowOpen] = useState<boolean | null>(null);
   const [fetchExistingFlag, setfetchExistingFlag] = useState<number | null>(0);
   const [submittedProjects, setSubmittedProjects] = useState<any[]>([]);
@@ -381,6 +395,32 @@ export default function EnhancedStudentDashboard() {
   
     getProjects();
   }, [isSubmitted]);
+
+  const handleProfileLinksSubmit = async(e: React.FormEvent) => {
+    e.preventDefault()
+    const response = await fetch('/api/profileLink', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(profileLinks)
+    }); 
+    console.log(response)
+    if (!response.ok) {
+      const data = await response.json()
+      console.error('Failed to submit profile links:', data)
+      toast.error("Failed to submit profile links")
+      return
+    }
+    console.log('Submitting profile links:', profileLinks)
+    toast.success("Profile Links Submitted")
+    setProfileLinks({
+      github: '',
+      leetcode: '',
+      codechef: '',
+      codeforces: ''
+    })
+  }
   
 
   return (
@@ -448,6 +488,7 @@ export default function EnhancedStudentDashboard() {
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
+                <TabsTrigger value="profile-links">Profile Links</TabsTrigger>
               </TabsList>
               <TabsContent value="attendance">
                 <CardHeader>
@@ -524,144 +565,159 @@ export default function EnhancedStudentDashboard() {
                 </CardContent>
               </TabsContent>
               <TabsContent value="projects">
-      <div className="relative">
-        <CardHeader>
-          <CardTitle>Projects</CardTitle>
-          <CardDescription>Manage your projects and track progress</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="new" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="new">New Project</TabsTrigger>
-              <TabsTrigger value="submitted">Submitted Projects</TabsTrigger>
-            </TabsList>
-            <TabsContent value="new">
-              <div className="bg-white p-4 rounded-lg shadow mt-4 relative">
-                {/* Overlay for New Project section */}
-                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                  <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-10 w-10 text-blue-500 mb-4 mx-auto"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
-                      />
-                    </svg>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Portal Closed
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                      We're sorry, but the portal is currently closed. Please
-                      check back later.
-                    </p>
-                    <a
-                      href="https://bdcoe.co.in/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                      onClick={() => console.log("More Information")}
-                    >
-                      More Information
-                    </a>
-                  </div>
+                <div className="relative">
+                  <CardHeader>
+                    <CardTitle>Projects</CardTitle>
+                    <CardDescription>
+                      Manage your projects and track progress
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="new" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="new">New Project</TabsTrigger>
+                        <TabsTrigger value="submitted">
+                          Submitted Projects
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="new">
+                        <div className="bg-white p-4 rounded-lg shadow mt-4 relative">
+                          {/* Overlay for New Project section */}
+
+
+
+
+
+
+
+                          {/* <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                            <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-10 w-10 text-blue-500 mb-4 mx-auto"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M13 16h-1v-4h-1m1-4h.01M12 8v4m0 4h.01M4 12h16M4 12a9.963 9.963 0 00.854-4.636C5.052 5.516 8.417 2 12 2s6.948 3.516 7.146 5.364A9.963 9.963 0 0016 12h-4z"
+                                />
+                              </svg>
+                              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                Portal Closed
+                              </h2>
+                              <p className="text-gray-600 mb-6">
+                                We're sorry, but the portal is currently closed.
+                                Please check back later.
+                              </p>
+                              <a
+                                href="https://bdcoe.co.in/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                                onClick={() => console.log("More Information")}
+                              >
+                                More Information
+                              </a>
+                            </div>
+                          </div> */}
+                          <h3 className="font-semibold text-lg mb-4">
+                            Submit New Project
+                          </h3>
+                          <form
+                            onSubmit={handleProjectSubmit}
+                            className="space-y-4"
+                          >
+                            <div>
+                              <Label htmlFor="projectName">Project Name</Label>
+                              <Input
+                                id="projectName"
+                                value={newProject.name}
+                                onChange={(e) =>
+                                  setNewProject({
+                                    ...newProject,
+                                    name: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="projectDescription">
+                                Description
+                              </Label>
+                              <Textarea
+                                id="projectDescription"
+                                value={newProject.description}
+                                onChange={(e) =>
+                                  setNewProject({
+                                    ...newProject,
+                                    description: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="projectDueDate">
+                                Submission Date
+                              </Label>
+                              <Input
+                                id="projectDueDate"
+                                type="date"
+                                value={newProject.dueDate}
+                                onChange={(e) =>
+                                  setNewProject({
+                                    ...newProject,
+                                    dueDate: e.target.value,
+                                  })
+                                }
+                                required
+                              />
+                            </div>
+                            <Button type="submit">Submit Project</Button>
+                          </form>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="submitted">
+                        <div className="space-y-4 mt-4 overflow-hidden">
+                          {submittedProjects.map((project) => (
+                            <Card
+                              key={project._id}
+                              className="flex w-full items-center justify-between"
+                            >
+                              <div className="flex-grow">
+                                <CardHeader>
+                                  <CardTitle className="font-bold">
+                                    {project.title}
+                                  </CardTitle>
+                                  <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
+                                    {project.link}
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <p>
+                                    <strong>Submission Date:</strong>{" "}
+                                    {new Date(
+                                      project.submissionDate
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </CardContent>
+                              </div>
+                              <CardFooter>
+                                <FiCheckCircle className="text-green-500 text-3xl mr-4" />
+                              </CardFooter>
+                            </Card>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
                 </div>
-                <h3 className="font-semibold text-lg mb-4">
-                  Submit New Project
-                </h3>
-                <form
-                  onSubmit={handleProjectSubmit}
-                  className="space-y-4"
-                >
-                  <div>
-                    <Label htmlFor="projectName">Project Name</Label>
-                    <Input
-                      id="projectName"
-                      value={newProject.name}
-                      onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          name: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="projectDescription">
-                      Description
-                    </Label>
-                    <Textarea
-                      id="projectDescription"
-                      value={newProject.description}
-                      onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          description: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="projectDueDate">Submission Date</Label>
-                    <Input
-                      id="projectDueDate"
-                      type="date"
-                      value={newProject.dueDate}
-                      onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          dueDate: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <Button type="submit">Submit Project</Button>
-                </form>
-              </div>
-            </TabsContent>
-            <TabsContent value="submitted">
-              <div className="space-y-4 mt-4 overflow-hidden">
-                {submittedProjects.map((project) => (
-                  <Card
-                    key={project._id}
-                    className="flex w-full items-center justify-between"
-                  >
-                    <div className="flex-grow">
-                      <CardHeader>
-                        <CardTitle className="font-bold">
-                          {project.title}
-                        </CardTitle>
-                        <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
-                          {project.link}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p>
-                          <strong>Submission Date:</strong>{" "}
-                          {new Date(project.submissionDate).toLocaleDateString()}
-                        </p>
-                      </CardContent>
-                    </div>
-                    <CardFooter>
-                      <FiCheckCircle className="text-green-500 text-3xl mr-4" />
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </div>
-    </TabsContent>
+              </TabsContent>
               <TabsContent value="stats">
                 <div className="relative">
                   <CardHeader>
@@ -698,16 +754,109 @@ export default function EnhancedStudentDashboard() {
                           <p className="text-sm text-gray-500">
                             Session Attended
                           </p>
-                        </div>  
-                      <div className="bg-white p-4 rounded-lg shadow text-center">
-                      <FileText className="mx-auto h-6 w-6 text-purple-500" />
-                      <p className="mt-2 font-semibold">{projects.length}</p>
-                      <p className="text-sm text-gray-500">Projects Submitted</p>
-                    </div>
-                    </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow text-center">
+                          <FileText className="mx-auto h-6 w-6 text-purple-500" />
+                          <p className="mt-2 font-semibold">
+                            {submittedProjects.length}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Projects Submitted
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </div>
+              </TabsContent>
+              <TabsContent value="profile-links">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Links</CardTitle>
+                    <CardDescription>
+                      Add your coding profile links
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form
+                      onSubmit={handleProfileLinksSubmit}
+                      className="space-y-4"
+                    >
+                      <div className=" flex w-full space-x-4 items-center">
+                        <Github className="w-5 h-5 text-gray-500" />
+                        <Label htmlFor="github">GitHub</Label>
+                        </div>
+                          <Input
+                            id="github"
+                            placeholder="https://github.com/yourusername"
+                            value={profileLinks.github}
+                            onChange={(e) =>
+                              setProfileLinks({
+                                ...profileLinks,
+                                github: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        <div className="flex items-center space-x-4">
+                          <Code className="w-5 h-5 text-gray-500" />
+                          <Label htmlFor="leetcode">LeetCode</Label>
+                        </div>
+                          <Input
+                            id="leetcode"
+                            placeholder="https://leetcode.com/yourusername"
+                            value={profileLinks.leetcode}
+                            className="w-[800px"
+                            onChange={(e) =>
+                              setProfileLinks({
+                                ...profileLinks,
+                                leetcode: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Coffee className="w-5 h-5 text-gray-500" />
+                        <Label htmlFor="codechef">CodeChef</Label>
+                          </div>
+                          <Input
+                            id="codechef"
+                            placeholder="https://www.codechef.com/users/yourusername"
+                            value={profileLinks.codechef}
+                            onChange={(e) =>
+                              setProfileLinks({
+                                ...profileLinks,
+                                codechef: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-4">
+                          <Terminal className="w-5 h-5 text-gray-500" />
+                        <Label htmlFor="codeforces">Codeforces</Label>
+                          </div>
+                          <Input
+                            id="codeforces"
+                            placeholder="https://codeforces.com/profile/yourusername"
+                            value={profileLinks.codeforces}
+                            onChange={(e) =>
+                              setProfileLinks({
+                                ...profileLinks,
+                                codeforces: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Submit Profile Links
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </Card>
