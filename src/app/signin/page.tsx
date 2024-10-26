@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Label } from "@/components/ui/label"
@@ -14,12 +14,13 @@ import { toast } from "sonner";
 
 export default function SignupFormDemo() {
 
-  const { data : session } = useSession();
-
+  // const { data : session } = useSession();
+  
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-
-  console.log(session);
+  const [isBigScreen, setIsBigScreen] = useState(false);
+  
+  // console.log(session);
 
   const router = useRouter();
 
@@ -65,12 +66,26 @@ export default function SignupFormDemo() {
 
 
       };
+
+
+      useEffect(() => {
+        const handleResize = () => {
+          setIsBigScreen(window.innerWidth >= 768); // Adjust the breakpoint as necessary
+        };
+    
+        handleResize(); // Set initial value
+        window.addEventListener('resize', handleResize);
+    
+        return () => {
+          window.removeEventListener('resize', handleResize);
+        };
+      }, []);
     
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-700 to-blue-500 p-4">
+    <div className="flex items-center justify-center min-h-screen bg-[#f8f9fd] p-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 , x : 180 }}
+        animate={isBigScreen ? { opacity: 1, y: 0, x: 180 } : { opacity: 1, y: 0 , x:-10}}
         transition={{ duration: 0.5 }}
         className="w-full max-w-4xl"
       >
@@ -80,7 +95,7 @@ export default function SignupFormDemo() {
             animate={{ x: 0 }}
             transition={{ type: 'spring', stiffness: 100 }}
           >
-            <CardHeader className="space-y-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+            <CardHeader className="space-y-1 bg-black text-white">
               <CardTitle className="text-2xl font-bold text-center">Welcome to BDCOE</CardTitle>
               <CardDescription className="text-center text-purple-100">Sign in to your account</CardDescription>
             </CardHeader>
@@ -123,7 +138,7 @@ export default function SignupFormDemo() {
                 </div>
               </div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white" type="submit" disabled={isLoading}>
+                <Button className="w-full bg-black text-white" type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
