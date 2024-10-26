@@ -220,7 +220,7 @@ export default function EnhancedStudentDashboard() {
           const response = await fetch('/api/user-detail', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'application/json', 
             },
             body: JSON.stringify({ studentNo: session.user.studentNo }),
           });
