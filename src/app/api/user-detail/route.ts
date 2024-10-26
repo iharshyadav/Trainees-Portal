@@ -34,7 +34,10 @@ export async function POST(request: NextRequest) {
       const { Name, studentNo: StudentNo, projects } = userDetail;
       return NextResponse.json({ userDetail: { Name, studentNo: StudentNo, projects }, status: 200 });
     } else {
-      return { message: 'User not found', status: 404 };
+      return NextResponse.json(
+        { message: 'User not found' },
+        { status: 404 }
+      );
     }
   } catch (error) {
     console.error(error);
