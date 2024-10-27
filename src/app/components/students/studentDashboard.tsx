@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flag,
- Github, Code, Coffee, Terminal
+ Github, Code, Coffee, Terminal, X 
 } from "lucide-react";
 import { format, parseISO, isToday, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,7 @@ import { toast } from "sonner";
 import ProfilPicture from "./profile/profilePicture";
 import { FiCheckCircle } from "react-icons/fi";
 import { FaTimesCircle } from "react-icons/fa";
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface userFlagCount {
   flagCount: number | null;
@@ -149,7 +150,7 @@ export default function EnhancedStudentDashboard() {
     codeforces: ''
   })
   const [windowOpen, setWindowOpen] = useState<boolean | null>(null);
-  const [fetchExistingFlag, setfetchExistingFlag] = useState<number | null>(0);
+  const [fetchExistingFlag, setfetchExistingFlag] = useState<number>(0);
   const [submittedProjects, setSubmittedProjects] = useState<any[]>([]);
   const { data: session } = useSession();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -158,6 +159,7 @@ export default function EnhancedStudentDashboard() {
   const [attendancePercentage, setAttendancePercentage] = useState(0);
   const [name, setName] = useState("");
   const [studentno, setStudentNo] = useState("");
+  const [showPopup, setShowPopup] = useState(false)
 
   // console.log(session,"wwedwedd")
 
@@ -368,8 +370,11 @@ export default function EnhancedStudentDashboard() {
       const user = (await showFlaggedUserDetailStudent(
         session?.user.studentNo
       )) as userFlagCount | null;
-      // console.log(user[0]?.flagCount),"kjhkkn";
+     console.log(user),"kjhkkn";
       setfetchExistingFlag(user?.flagCount ?? 0);
+      if ((user?.flagCount ?? 0) > 0) {
+        setShowPopup(true)
+      }
     };
     showFlaguser();
   }, []);
@@ -466,6 +471,99 @@ export default function EnhancedStudentDashboard() {
                 </div>
               </CardContent>
             </Card>
+            {fetchExistingFlag > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-[90%] max-w-md mx-auto"
+        >
+          <Card className="bg-red-100 mb-4 border-red-500 border-2">
+            <CardContent className="p-6">
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="flex items-center justify-center gap-2 mb-4"
+              >
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+                <h2 className="text-2xl font-bold text-red-600">WARNING</h2>
+              </motion.div>
+              <p className="text-center text-red-700 font-semibold mb-2">
+                Your account has been flagged, {name}!
+              </p>
+              <p className="text-center text-red-600">
+                You have received {fetchExistingFlag} flag{fetchExistingFlag > 1 ? 's' : ''}. 
+                3 flags will result in immediate termination from probation.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+         <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 50 }}
+              className="w-[90%] max-w-md"
+            >
+              <Card className="bg-red-100 border-red-500 border-2">
+                <CardHeader className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-2"
+                    onClick={() => setShowPopup(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-center text-2xl font-bold text-red-600">URGENT WARNING</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="flex items-center justify-center gap-2 mb-4"
+                  >
+                    <AlertTriangle className="w-12 h-12 text-red-600" />
+                  </motion.div>
+                  <p className="text-center text-red-700 font-semibold mb-4">
+                    {name}, your account has been flagged!
+                  </p>
+                  <p className="text-center text-red-600 mb-4">
+                    You have received {fetchExistingFlag} flag{fetchExistingFlag > 1 ? 's' : ''}. 
+                    This is a serious matter that requires your immediate attention.
+                  </p>
+                  <p className="text-center text-red-700 font-semibold mb-2">Possible reasons for flagging:</p>
+                  <ul className="list-disc list-inside text-red-600 mb-4">
+                    <li>Late submission of profile links</li>
+                    <li>Incomplete project submissions</li>
+                    <li>Missing or inappropriate profile photo</li>
+                  </ul>
+                  <p className="text-center text-red-600 font-bold">
+                    IMPORTANT: 3 flags will result in immediate termination from probation.
+                    Please address any outstanding issues immediately to avoid further consequences.
+                  </p>
+                </CardContent>
+                <CardFooter className="justify-center">
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowPopup(false)}
+                  >
+                    I Understand
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
             <CardFooter className="flex justify-center gap-4 overflow-y-scroll">
               <EditProfilePopup
                 studentData={userDetail}
@@ -488,7 +586,7 @@ export default function EnhancedStudentDashboard() {
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
-                <TabsTrigger value="profile-links">Profile Links</TabsTrigger>
+                {/* <TabsTrigger value="profile-links">Profile Links</TabsTrigger> */}
               </TabsList>
               <TabsContent value="attendance">
                 <CardHeader>
@@ -498,7 +596,7 @@ export default function EnhancedStudentDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-4 ">
                     {currentRecords.map((day, index) => (
                       <div
                         key={index}
@@ -590,7 +688,7 @@ export default function EnhancedStudentDashboard() {
 
 
 
-                          {/* <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
                             <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -623,7 +721,7 @@ export default function EnhancedStudentDashboard() {
                                 More Information
                               </a>
                             </div>
-                          </div> */}
+                          </div>
                           <h3 className="font-semibold text-lg mb-4">
                             Submit New Project
                           </h3>
@@ -769,7 +867,7 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
-              <TabsContent value="profile-links">
+              {/* <TabsContent value="profile-links">
                 <Card>
                   <CardHeader>
                     <CardTitle>Profile Links</CardTitle>
@@ -857,7 +955,7 @@ export default function EnhancedStudentDashboard() {
                     </form>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </Card>
 
