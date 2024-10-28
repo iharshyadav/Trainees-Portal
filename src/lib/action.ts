@@ -7,6 +7,8 @@ import { ConnectToDB } from "./db"
 import { User } from "./models/user.model"
 import FlagUsers from "./models/flag.model"
 import ProfileImages from "./models/userImage"
+import GroupProject from "./models/groupProject"
+import Leader from "./models/Leader.model"
 
 export const showAttendence = async () => {
 
@@ -234,3 +236,86 @@ export const showProfile = async (studentNo: string | undefined) => {
     throw new Error("Failed to fetch user image");
   }
 };
+
+interface TeamMember {
+  id: string;
+  name: string;
+  studentNumber: string;
+}
+
+interface GroupProjectData {
+  projectName: string;
+  projectDescription: string;
+  githubLink: string;
+  hostedLink?: string;
+  teamMembers: TeamMember[];
+  leaderStudentNo: string | undefined;
+  leaderName: string | undefined | null;
+}
+
+export async function submitGroupProject(data: GroupProjectData) {
+  await ConnectToDB();
+
+  if(data.githubLink === "" || data.hostedLink === "" || data.leaderName === "" || data.leaderStudentNo === "" || data.projectDescription === "" || data.projectName === ""){
+    return { success: false, message: "Failed to submit project.Please fill all the fields!!!" };
+  }
+
+  const existingProject = await GroupProject.findOne({ leaderStudentNo: data.leaderStudentNo });
+  if (existingProject) {
+    return { success: false, message: "You have already submitted a project." };
+  }
+
+  const groupProject = new GroupProject({
+    projectName: data.projectName,
+    projectDescription: data.projectDescription,
+    githubLink: data.githubLink,
+    hostedLink: data.hostedLink,
+    teamMembers: data.teamMembers,
+    leaderStudentNo: data.leaderStudentNo,
+    leaderName: data.leaderName,
+  });
+
+  try {
+    await groupProject.save();
+    return { success: true, message: "Project submitted successfully." };
+  } catch (error) {
+    console.error("Failed to save project:", error);
+    return { success: false, message: "Failed to submit project." };
+  }
+}
+
+export const LeaderAccess = async (studentNo : string | undefined) => {
+
+  await ConnectToDB();
+  
+  const findLeader = await Leader.findOne({userId : studentNo})
+
+  if(!findLeader){
+    return { success: false};
+  }
+
+  return { success: true};
+}
+
+export const addLeader = async (name : string , studentNo : string) => {
+  
+  await ConnectToDB();
+  
+  if(name === "" || studentNo === ""){
+    return { success: false, message: "Fill all the fields!!!" }; 
+  }
+
+  const findLeader = await Leader.findOne({userId : studentNo})
+
+  if(findLeader){
+    return { success: false, message: "Leader already marked!!!" };
+  }
+
+  await Leader.create({
+    userId : studentNo,
+    Name : name
+  })
+
+  return { success: true, message: "Leader marked!!!" };
+
+}

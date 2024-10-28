@@ -45,6 +45,7 @@ import { EditProfilePopup } from "./edit-student-profile";
 import axios from "axios";
 import {
   fetchUserProjects,
+  LeaderAccess,
   saveNewProject,
   showAttendence,
   showFlaggedUserDetail,
@@ -57,6 +58,8 @@ import ProfilPicture from "./profile/profilePicture";
 import { FiCheckCircle } from "react-icons/fi";
 import { FaTimesCircle } from "react-icons/fa";
 import { motion, AnimatePresence } from 'framer-motion'
+import GroupProject from "./groupProject";
+import NotALeader from "./notLeader";
 
 interface userFlagCount {
   flagCount: number | null;
@@ -160,6 +163,7 @@ export default function EnhancedStudentDashboard() {
   const [name, setName] = useState("");
   const [studentno, setStudentNo] = useState("");
   const [showPopup, setShowPopup] = useState(false)
+  const [checkLeaderAccess, setCheckLeaderAccess] = useState<boolean>(false)
 
   // console.log(session,"wwedwedd")
 
@@ -249,6 +253,18 @@ export default function EnhancedStudentDashboard() {
       getUserDetails();
     }
   }, [session]);
+
+  useEffect(() => {
+    const checkLeader = async () => {
+      const check = await LeaderAccess(session?.user.studentNo)
+      if(check.success){
+        setCheckLeaderAccess(true)
+      }else{
+        setCheckLeaderAccess(false);
+      }
+    }
+    checkLeader();
+  },[])
   
 
   useEffect(() => {
@@ -370,7 +386,7 @@ export default function EnhancedStudentDashboard() {
       const user = (await showFlaggedUserDetailStudent(
         session?.user.studentNo
       )) as userFlagCount | null;
-     console.log(user),"kjhkkn";
+    //  console.log(user),"kjhkkn";
       setfetchExistingFlag(user?.flagCount ?? 0);
       if ((user?.flagCount ?? 0) > 0) {
         setShowPopup(true)
@@ -585,6 +601,7 @@ export default function EnhancedStudentDashboard() {
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
+                <TabsTrigger value="groupProject">Group Project</TabsTrigger>
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
                 {/* <TabsTrigger value="profile-links">Profile Links</TabsTrigger> */}
               </TabsList>
@@ -681,13 +698,6 @@ export default function EnhancedStudentDashboard() {
                       <TabsContent value="new">
                         <div className="bg-white p-4 rounded-lg shadow mt-4 relative">
                           {/* Overlay for New Project section */}
-
-
-
-
-
-
-
                           <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
                             <div className="bg-white p-8 w-64 md:w-full rounded-lg shadow-lg max-w-md text-center transform transition-transform duration-300 scale-105 hover:scale-100">
                               <svg
@@ -816,6 +826,10 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
+              {
+                checkLeaderAccess ?  <TabsContent value="groupProject"><GroupProject session={session} /></TabsContent> : <TabsContent value="groupProject"> <NotALeader /> </TabsContent>
+              }
+             
               <TabsContent value="stats">
                 <div className="relative">
                   <CardHeader>

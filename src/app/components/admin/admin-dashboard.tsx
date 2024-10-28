@@ -22,6 +22,7 @@ import FreezeAttendance from "./freeze-attendance"
 import axios from "axios"
 import FlagUser from "./flag-user"
 import { showAllUserDetails } from "@/lib/action"
+import AddLeader from "./addLeader"
 
 export default function AttendanceDashboard() {
   const [apiData, setApiData] = useState<any>(null)
@@ -310,7 +311,7 @@ export default function AttendanceDashboard() {
       <FreezeAttendance />
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">
             <Users className="mr-2 h-4 w-4" />
             Overview
@@ -322,6 +323,10 @@ export default function AttendanceDashboard() {
           <TabsTrigger value="statistics">
             <BarChart className="mr-2 h-4 w-4" />
             Statistics
+          </TabsTrigger>
+          <TabsTrigger value="Add Leader">
+            <BarChart className="mr-2 h-4 w-4" />
+            Add Leader
           </TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
@@ -356,6 +361,9 @@ export default function AttendanceDashboard() {
               <StudentStatistics />
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="Add Leader">
+           <AddLeader />
         </TabsContent>
       </Tabs>
     </div>
