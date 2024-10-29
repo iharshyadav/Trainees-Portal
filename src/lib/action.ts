@@ -256,7 +256,7 @@ interface GroupProjectData {
 export async function submitGroupProject(data: GroupProjectData) {
   await ConnectToDB();
 
-  if(data.githubLink === "" || data.hostedLink === "" || data.leaderName === "" || data.leaderStudentNo === "" || data.projectDescription === "" || data.projectName === ""){
+  if(data.githubLink === "" || data.leaderName === "" || data.leaderStudentNo === "" || data.projectDescription === "" || data.projectName === ""){
     return { success: false, message: "Failed to submit project.Please fill all the fields!!!" };
   }
 
