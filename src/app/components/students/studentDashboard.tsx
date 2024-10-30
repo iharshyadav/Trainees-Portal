@@ -832,8 +832,7 @@ export default function EnhancedStudentDashboard() {
                 checkLeaderAccess ?  <TabsContent value="groupProject"><GroupProject session={session} /></TabsContent> : <TabsContent value="groupProject"> <NotALeader /> </TabsContent>
               }
              <TabsContent value="project"><FinalProject session={session} /></TabsContent>
-              {/* <TabsContent value="stats">
-                <div className="relative">
+              {/* <TabsContent value="stats"> <div className="relative">
                   <CardHeader>
                     <CardTitle>Attendance Statistics</CardTitle>
                     <CardDescription>
