@@ -60,6 +60,7 @@ import { FaTimesCircle } from "react-icons/fa";
 import { motion, AnimatePresence } from 'framer-motion'
 import GroupProject from "./groupProject";
 import NotALeader from "./notLeader";
+import FinalProject from "./finalProject";
 
 interface userFlagCount {
   flagCount: number | null;
@@ -601,8 +602,9 @@ export default function EnhancedStudentDashboard() {
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
-                <TabsTrigger value="groupProject">Group</TabsTrigger>
+                {/* <TabsTrigger value="groupProject">Group</TabsTrigger> */}
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
+                <TabsTrigger value="project">Final Project</TabsTrigger>
                 {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
               </TabsList>
               <TabsContent value="attendance">
@@ -826,10 +828,10 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
-              {
+              {/* {
                 checkLeaderAccess ?  <TabsContent value="groupProject"><GroupProject session={session} /></TabsContent> : <TabsContent value="groupProject"> <NotALeader /> </TabsContent>
-              }
-             
+              } */}
+             <TabsContent value="project"><FinalProject session={session} /></TabsContent>
               <TabsContent value="stats">
                 <div className="relative">
                   <CardHeader>
@@ -881,7 +883,7 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
-              <TabsContent value="profile-links">
+              {/* <TabsContent value="profile-links">
                 <Card>
                   <CardHeader>
                     <CardTitle>Profile Links</CardTitle>
@@ -969,7 +971,7 @@ export default function EnhancedStudentDashboard() {
                     </form>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </Card>
 
