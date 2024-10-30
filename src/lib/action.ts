@@ -319,3 +319,13 @@ export const addLeader = async (name : string , studentNo : string) => {
   return { success: true, message: "Leader marked!!!" };
 
 }
+
+
+export async function submitFinalProject(data: any) {
+  await ConnectToDB();
+
+  if(data.description === "" || data.projectTitle === "" || data.studentNo === "" || data.techStack === ""){
+    return { success: false, message: "Failed to submit project.Please fill all the fields!!!" };
+  }
+
+}
