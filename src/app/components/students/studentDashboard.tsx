@@ -602,8 +602,8 @@ export default function EnhancedStudentDashboard() {
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
-                {/* <TabsTrigger value="groupProject">Group</TabsTrigger> */}
-                <TabsTrigger value="stats">Statistics</TabsTrigger>
+                <TabsTrigger value="groupProject">Group</TabsTrigger>
+                {/* <TabsTrigger value="stats">Statistics</TabsTrigger> */}
                 <TabsTrigger value="project">Final Project</TabsTrigger>
                 {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
               </TabsList>
@@ -828,11 +828,11 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
-              {/* {
+              {
                 checkLeaderAccess ?  <TabsContent value="groupProject"><GroupProject session={session} /></TabsContent> : <TabsContent value="groupProject"> <NotALeader /> </TabsContent>
-              } */}
+              }
              <TabsContent value="project"><FinalProject session={session} /></TabsContent>
-              <TabsContent value="stats">
+              {/* <TabsContent value="stats">
                 <div className="relative">
                   <CardHeader>
                     <CardTitle>Attendance Statistics</CardTitle>
@@ -882,7 +882,7 @@ export default function EnhancedStudentDashboard() {
                     </div>
                   </CardContent>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
               {/* <TabsContent value="profile-links">
                 <Card>
                   <CardHeader>
