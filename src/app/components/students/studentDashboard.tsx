@@ -61,6 +61,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import GroupProject from "./groupProject";
 import NotALeader from "./notLeader";
 import FinalProject from "./finalProject";
+import {  useRouter } from "next/navigation";
 
 interface userFlagCount {
   flagCount: number | null;
@@ -165,6 +166,7 @@ export default function EnhancedStudentDashboard() {
   const [studentno, setStudentNo] = useState("");
   const [showPopup, setShowPopup] = useState(false)
   const [checkLeaderAccess, setCheckLeaderAccess] = useState<boolean>(false)
+  const router = useRouter();
 
   // console.log(session,"wwedwedd")
 
@@ -581,11 +583,23 @@ export default function EnhancedStudentDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-            <CardFooter className="flex justify-center gap-4 overflow-y-scroll">
+            <CardFooter className="flex justify-center gap-4 md:flex-row flex-col">
               <EditProfilePopup
                 studentData={userDetail}
                 onSave={handleProfileUpdate}
               />
+              {
+                session && session.user.role === "admin" && (
+                  <Button
+                    className="bg-blue-500 hover:bg-blue-600"
+                    onClick={() =>
+                      router.push("/admin")
+                    }
+                  >
+                    Admin
+                  </Button>
+                )
+              }
               <Button
                 className="bg-red-500 hover:bg-red-600"
                 onClick={() =>
@@ -603,8 +617,8 @@ export default function EnhancedStudentDashboard() {
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="groupProject">Group</TabsTrigger>
-                <TabsTrigger value="stats">Statistics</TabsTrigger>
-                {/* <TabsTrigger value="project">Final Project</TabsTrigger> */}
+                {/* <TabsTrigger value="stats">Statistics</TabsTrigger> */}
+                <TabsTrigger value="project">Final Project</TabsTrigger>
                 {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
               </TabsList>
               <TabsContent value="attendance">
