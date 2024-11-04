@@ -14,7 +14,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Flag,
- Github, Code, Coffee, Terminal, X 
+  Github,
+  Code,
+  Coffee,
+  Terminal,
+  X,
 } from "lucide-react";
 import { format, parseISO, isToday, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -49,7 +53,7 @@ import {
   saveNewProject,
   showAttendence,
   showFlaggedUserDetail,
-  showFlaggedUserDetailStudent
+  showFlaggedUserDetailStudent,
 } from "@/lib/action";
 import { signOut, useSession } from "next-auth/react";
 import StudentNavbar from "./navbar";
@@ -57,11 +61,14 @@ import { toast } from "sonner";
 import ProfilPicture from "./profile/profilePicture";
 import { FiCheckCircle } from "react-icons/fi";
 import { FaTimesCircle } from "react-icons/fa";
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from "framer-motion";
 import GroupProject from "./groupProject";
 import NotALeader from "./notLeader";
 import FinalProject from "./finalProject";
-import {  useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import AttendanceSkeleton from "./skeletons/attendance-skeleton";
+import SubmittedProjects from "./components/submitted-projects/submittedProjects";
+import SkeletonSubmitted from "./components/submitted-projects/skeletonSubmitted";
 
 interface userFlagCount {
   flagCount: number | null;
@@ -78,10 +85,10 @@ const initialStudentData = {
 };
 
 interface ProfileLinks {
-  github: string
-  leetcode: string
-  codechef: string
-  codeforces: string
+  github: string;
+  leetcode: string;
+  codechef: string;
+  codeforces: string;
 }
 
 // Simulated attendance window (10 minutes from now)
@@ -149,11 +156,11 @@ export default function EnhancedStudentDashboard() {
     _id: "",
   });
   const [profileLinks, setProfileLinks] = useState<ProfileLinks>({
-    github: '',
-    leetcode: '',
-    codechef: '',
-    codeforces: ''
-  })
+    github: "",
+    leetcode: "",
+    codechef: "",
+    codeforces: "",
+  });
   const [windowOpen, setWindowOpen] = useState<boolean | null>(null);
   const [fetchExistingFlag, setfetchExistingFlag] = useState<number>(0);
   const [submittedProjects, setSubmittedProjects] = useState<any[]>([]);
@@ -164,9 +171,10 @@ export default function EnhancedStudentDashboard() {
   const [attendancePercentage, setAttendancePercentage] = useState(0);
   const [name, setName] = useState("");
   const [studentno, setStudentNo] = useState("");
-  const [showPopup, setShowPopup] = useState(false)
-  const [checkLeaderAccess, setCheckLeaderAccess] = useState<boolean>(false)
+  const [showPopup, setShowPopup] = useState(false);
+  const [checkLeaderAccess, setCheckLeaderAccess] = useState<boolean>(false);
   const router = useRouter();
+  const [attendanceLoadingstate, setattendanceLoadingstate] = useState(false);
 
   // console.log(session,"wwedwedd")
 
@@ -226,16 +234,16 @@ export default function EnhancedStudentDashboard() {
     const getUserDetails = async () => {
       if (session?.user.studentNo) {
         try {
-          const response = await fetch('/api/user-detail', {
-            method: 'POST',
+          const response = await fetch("/api/user-detail", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json', 
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ studentNo: session.user.studentNo }),
           });
-  
+
           const detail = await response.json();
-  
+
           if (response.status === 200) {
             const stuname = detail.userDetail?.Name;
             const stuno = detail.userDetail?.studentNo;
@@ -245,13 +253,13 @@ export default function EnhancedStudentDashboard() {
             // Handle error cases
             console.error(detail.error || detail.message);
           }
-        } catch (err:any) {
+        } catch (err: any) {
           // Handle fetch error
           console.error(err.message);
         }
       }
     };
-  
+
     if (session?.user.studentNo) {
       getUserDetails();
     }
@@ -259,16 +267,15 @@ export default function EnhancedStudentDashboard() {
 
   useEffect(() => {
     const checkLeader = async () => {
-      const check = await LeaderAccess(session?.user.studentNo)
-      if(check.success){
-        setCheckLeaderAccess(true)
-      }else{
+      const check = await LeaderAccess(session?.user.studentNo);
+      if (check.success) {
+        setCheckLeaderAccess(true);
+      } else {
         setCheckLeaderAccess(false);
       }
-    }
+    };
     checkLeader();
-  },[])
-  
+  }, []);
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -291,6 +298,7 @@ export default function EnhancedStudentDashboard() {
               (item): item is { date: string; status: string } =>
                 item !== undefined
             );
+          setattendanceLoadingstate(true);
           return uniqueData;
         });
       } else {
@@ -301,11 +309,10 @@ export default function EnhancedStudentDashboard() {
     fetchAttendance();
   }, []);
 
-
   const handleProjectSubmit = (e: any) => {
     e.preventDefault();
     setIsSubmitted(true);
-     console.log(isSubmitted)
+    console.log(isSubmitted);
   };
 
   useEffect(() => {
@@ -316,13 +323,13 @@ export default function EnhancedStudentDashboard() {
           setIsSubmitted(false);
           return;
         }
-         console.log("here krish")
+        console.log("here krish");
         const task = await saveNewProject(
           newProject.name,
           newProject.description,
           newProject.dueDate
         );
-         console.log(task);
+        console.log(task);
         if (
           typeof task === "object" &&
           task !== null &&
@@ -389,10 +396,10 @@ export default function EnhancedStudentDashboard() {
       const user = (await showFlaggedUserDetailStudent(
         session?.user.studentNo
       )) as userFlagCount | null;
-    //  console.log(user),"kjhkkn";
+      //  console.log(user),"kjhkkn";
       setfetchExistingFlag(user?.flagCount ?? 0);
       if ((user?.flagCount ?? 0) > 0) {
-        setShowPopup(true)
+        setShowPopup(true);
       }
     };
     showFlaguser();
@@ -401,51 +408,50 @@ export default function EnhancedStudentDashboard() {
   useEffect(() => {
     const getProjects = async () => {
       try {
-        const response = await fetch('/api/projects');
+        const response = await fetch("/api/projects");
         const data = await response.json();
-  
+
         if (response.status === 200) {
           setSubmittedProjects(data.projects);
         } else {
           // Handle error cases
           console.error(data.error);
         }
-      } catch (err:any) {
+      } catch (err: any) {
         // Handle fetch error
         toast.error("Failed to fetch projects");
         console.error(err.message);
       }
     };
-  
+
     getProjects();
   }, [isSubmitted]);
 
-  const handleProfileLinksSubmit = async(e: React.FormEvent) => {
-    e.preventDefault()
-    const response = await fetch('/api/profileLink', {
-      method: 'POST',
+  const handleProfileLinksSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await fetch("/api/profileLink", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(profileLinks)
-    }); 
-    console.log(response)
+      body: JSON.stringify(profileLinks),
+    });
+    console.log(response);
     if (!response.ok) {
-      const data = await response.json()
-      console.error('Failed to submit profile links:', data)
-      toast.error("Failed to submit profile links")
-      return
+      const data = await response.json();
+      console.error("Failed to submit profile links:", data);
+      toast.error("Failed to submit profile links");
+      return;
     }
-    console.log('Submitting profile links:', profileLinks)
-    toast.success("Profile Links Submitted")
+    console.log("Submitting profile links:", profileLinks);
+    toast.success("Profile Links Submitted");
     setProfileLinks({
-      github: '',
-      leetcode: '',
-      codechef: '',
-      codeforces: ''
-    })
-  }
-  
+      github: "",
+      leetcode: "",
+      codechef: "",
+      codeforces: "",
+    });
+  };
 
   return (
     <>
@@ -491,115 +497,121 @@ export default function EnhancedStudentDashboard() {
               </CardContent>
             </Card>
             {fetchExistingFlag > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-[90%] max-w-md mx-auto"
-        >
-          <Card className="bg-red-100 mb-4 border-red-500 border-2">
-            <CardContent className="p-6">
               <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="flex items-center justify-center gap-2 mb-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="w-[90%] max-w-md mx-auto"
               >
-                <AlertTriangle className="w-8 h-8 text-red-600" />
-                <h2 className="text-2xl font-bold text-red-600">WARNING</h2>
+                <Card className="bg-red-100 mb-4 border-red-500 border-2">
+                  <CardContent className="p-6">
+                    <motion.div
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="flex items-center justify-center gap-2 mb-4"
+                    >
+                      <AlertTriangle className="w-8 h-8 text-red-600" />
+                      <h2 className="text-2xl font-bold text-red-600">
+                        WARNING
+                      </h2>
+                    </motion.div>
+                    <p className="text-center text-red-700 font-semibold mb-2">
+                      Your account has been flagged, {name}!
+                    </p>
+                    <p className="text-center text-red-600">
+                      You have received {fetchExistingFlag} flag
+                      {fetchExistingFlag > 1 ? "s" : ""}. 3 flags will result in
+                      immediate termination from probation.
+                    </p>
+                  </CardContent>
+                </Card>
               </motion.div>
-              <p className="text-center text-red-700 font-semibold mb-2">
-                Your account has been flagged, {name}!
-              </p>
-              <p className="text-center text-red-600">
-                You have received {fetchExistingFlag} flag{fetchExistingFlag > 1 ? 's' : ''}. 
-                3 flags will result in immediate termination from probation.
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-         <AnimatePresence>
-        {showPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 50 }}
-              className="w-[90%] max-w-md"
-            >
-              <Card className="bg-red-100 border-red-500 border-2">
-                <CardHeader className="relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2"
-                    onClick={() => setShowPopup(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <CardTitle className="text-center text-2xl font-bold text-red-600">URGENT WARNING</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
+            )}
+            <AnimatePresence>
+              {showPopup && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                >
                   <motion.div
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="flex items-center justify-center gap-2 mb-4"
+                    initial={{ scale: 0.9, y: 50 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 50 }}
+                    className="w-[90%] max-w-md"
                   >
-                    <AlertTriangle className="w-12 h-12 text-red-600" />
+                    <Card className="bg-red-100 border-red-500 border-2">
+                      <CardHeader className="relative">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2"
+                          onClick={() => setShowPopup(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <CardTitle className="text-center text-2xl font-bold text-red-600">
+                          URGENT WARNING
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <motion.div
+                          animate={{ scale: [1, 1.05, 1] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                          className="flex items-center justify-center gap-2 mb-4"
+                        >
+                          <AlertTriangle className="w-12 h-12 text-red-600" />
+                        </motion.div>
+                        <p className="text-center text-red-700 font-semibold mb-4">
+                          {name}, your account has been flagged!
+                        </p>
+                        <p className="text-center text-red-600 mb-4">
+                          You have received {fetchExistingFlag} flag
+                          {fetchExistingFlag > 1 ? "s" : ""}. This is a serious
+                          matter that requires your immediate attention.
+                        </p>
+                        <p className="text-center text-red-700 font-semibold mb-2">
+                          Possible reasons for flagging:
+                        </p>
+                        <ul className="list-disc list-inside text-red-600 mb-4">
+                          <li>Late submission of profile links</li>
+                          <li>Incomplete project submissions</li>
+                          <li>Missing or inappropriate profile photo</li>
+                        </ul>
+                        <p className="text-center text-red-600 font-bold">
+                          IMPORTANT: 3 flags will result in immediate
+                          termination from probation. Please address any
+                          outstanding issues immediately to avoid further
+                          consequences.
+                        </p>
+                      </CardContent>
+                      <CardFooter className="justify-center">
+                        <Button
+                          variant="destructive"
+                          onClick={() => setShowPopup(false)}
+                        >
+                          I Understand
+                        </Button>
+                      </CardFooter>
+                    </Card>
                   </motion.div>
-                  <p className="text-center text-red-700 font-semibold mb-4">
-                    {name}, your account has been flagged!
-                  </p>
-                  <p className="text-center text-red-600 mb-4">
-                    You have received {fetchExistingFlag} flag{fetchExistingFlag > 1 ? 's' : ''}. 
-                    This is a serious matter that requires your immediate attention.
-                  </p>
-                  <p className="text-center text-red-700 font-semibold mb-2">Possible reasons for flagging:</p>
-                  <ul className="list-disc list-inside text-red-600 mb-4">
-                    <li>Late submission of profile links</li>
-                    <li>Incomplete project submissions</li>
-                    <li>Missing or inappropriate profile photo</li>
-                  </ul>
-                  <p className="text-center text-red-600 font-bold">
-                    IMPORTANT: 3 flags will result in immediate termination from probation.
-                    Please address any outstanding issues immediately to avoid further consequences.
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-center">
-                  <Button
-                    variant="destructive"
-                    onClick={() => setShowPopup(false)}
-                  >
-                    I Understand
-                  </Button>
-                </CardFooter>
-              </Card>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <CardFooter className="flex justify-center gap-4 md:flex-row flex-col">
               <EditProfilePopup
                 studentData={userDetail}
                 onSave={handleProfileUpdate}
               />
-              {
-                session && session.user.role === "admin" && (
-                  <Button
-                    className="bg-blue-500 hover:bg-blue-600"
-                    onClick={() =>
-                      router.push("/admin")
-                    }
-                  >
-                    Admin
-                  </Button>
-                )
-              }
+              {session && session.user.role === "admin" && (
+                <Button
+                  className="bg-blue-500 hover:bg-blue-600"
+                  onClick={() => router.push("/admin")}
+                >
+                  Admin
+                </Button>
+              )}
               <Button
                 className="bg-red-500 hover:bg-red-600"
                 onClick={() =>
@@ -629,25 +641,33 @@ export default function EnhancedStudentDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4 ">
-                    {currentRecords.map((day, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-2 bg-white rounded-lg shadow"
-                      >
-                        <span className="font-medium">
-                          {formatDate(day.date)}
-                        </span>
-                        <Badge
-                          variant={
-                            day.status === "present" ? "default" : "destructive"
-                          }
+                  {/* <div> */}
+                  {attendanceData.length > 0 ? (
+                    <div className="space-y-4">
+                      {currentRecords.map((day, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-2 bg-white rounded-lg shadow"
                         >
-                          {day.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
+                          <span className="font-medium">
+                            {formatDate(day.date)}
+                          </span>
+                          <Badge
+                            variant={
+                              day.status === "present"
+                                ? "default"
+                                : "destructive"
+                            }
+                          >
+                            {day.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <AttendanceSkeleton />
+                  )}
+                  {/* </div> */}
                   <div className="flex items-center justify-between mt-4">
                     <Button
                       onClick={() => paginate(currentPage - 1)}
@@ -707,9 +727,9 @@ export default function EnhancedStudentDashboard() {
                     <Tabs defaultValue="new" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="new">New Project</TabsTrigger>
-                        <TabsTrigger value="submitted">
+                        {/* <TabsTrigger value="submitted">
                           Submitted Projects
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                       </TabsList>
                       <TabsContent value="new">
                         <div className="bg-white p-4 rounded-lg shadow mt-4 relative">
@@ -806,47 +826,26 @@ export default function EnhancedStudentDashboard() {
                           </form>
                         </div>
                       </TabsContent>
-                      <TabsContent value="submitted">
-                        <div className="space-y-4 mt-4 overflow-hidden">
-                          {submittedProjects.map((project) => (
-                            <Card
-                              key={project._id}
-                              className="flex w-full items-center justify-between"
-                            >
-                              <div className="flex-grow">
-                                <CardHeader>
-                                  <CardTitle className="font-bold">
-                                    {project.title}
-                                  </CardTitle>
-                                  <CardDescription className="w-full break-words whitespace-normal overflow-hidden text-ellipsis">
-                                    {project.link}
-                                  </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                  <p>
-                                    <strong>Submission Date:</strong>{" "}
-                                    {new Date(
-                                      project.submissionDate
-                                    ).toLocaleDateString()}
-                                  </p>
-                                </CardContent>
-                              </div>
-                              <CardFooter>
-                                <FiCheckCircle className="text-green-500 text-3xl mr-4" />
-                              </CardFooter>
-                            </Card>
-                          ))}
-                        </div>
-                      </TabsContent>
                     </Tabs>
                   </CardContent>
                 </div>
               </TabsContent>
-              {
-                checkLeaderAccess ?  <TabsContent value="groupProject"><GroupProject session={session} /></TabsContent> : <TabsContent value="groupProject"> <NotALeader /> </TabsContent>
-              }
-             <TabsContent value="project"><FinalProject session={session} /></TabsContent>
-              <TabsContent value="stats"> <div className="relative">
+              {checkLeaderAccess ? (
+                <TabsContent value="groupProject">
+                  <GroupProject session={session} />
+                </TabsContent>
+              ) : (
+                <TabsContent value="groupProject">
+                  {" "}
+                  <NotALeader />{" "}
+                </TabsContent>
+              )}
+              <TabsContent value="project">
+                <FinalProject session={session} />
+              </TabsContent>
+              <TabsContent value="stats">
+                {" "}
+                <div className="relative">
                   <CardHeader>
                     <CardTitle>Attendance Statistics</CardTitle>
                     <CardDescription>
@@ -1049,24 +1048,45 @@ export default function EnhancedStudentDashboard() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Attendance Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Important Notice</AlertTitle>
-                <AlertDescription>
-                  The attendance marking window is open for 10 minutes each day.
-                  Please ensure you mark your attendance within this timeframe.
-                  If you miss the window, please contact your administrator.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+          {/* <TabsContent value="submitted"> */}
+          {/* </TabsContent> */}
         </div>
+        <div className="mt-8 w-full">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+              Submitted Projects
+            </h2>
+            <p className="text-lg text-gray-700 mb-6">
+              Explore the collection of projects you have successfully
+              submitted.
+            </p>
+            <div className="flex justify-center">
+              <div className="w-1/3 h-1 rounded bg-gradient-to-r from-blue-500 to-indigo-600 mb-4"></div>
+            </div>
+          </div>
+          <div className="flex w-full flex-col md:flex-row md:flex-wrap md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+            {submittedProjects.length > 0 ? (
+              <SubmittedProjects submittedProjects={submittedProjects} />
+            ) : <SkeletonSubmitted />
+            }
+          </div>
+        </div>
+        <Card className="lg:col-span-3 mt-10">
+          <CardHeader>
+            <CardTitle>Attendance Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Important Notice</AlertTitle>
+              <AlertDescription>
+                The attendance marking window is open for 10 minutes each day.
+                Please ensure you mark your attendance within this timeframe. If
+                you miss the window, please contact your administrator.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
       </div>
     </>
   );
