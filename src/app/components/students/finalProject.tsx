@@ -80,7 +80,7 @@ export default function FinalProject({ session }: Props) {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your project. How did this idea come to your mind? What did you do in this project? How did you make it?"
+              placeholder="Describe your project. How did this idea come to your mind? What will you do in this project? How will you make it?"
               rows={8}
               required
             />
