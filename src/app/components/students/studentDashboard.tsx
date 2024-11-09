@@ -224,7 +224,7 @@ export default function EnhancedStudentDashboard() {
     };
 
     // Poll every second
-    const intervalId = setInterval(fetchStatus, 10000);
+    const intervalId = setInterval(fetchStatus, 5000);
 
     // Clean up the interval on component unmount
     return () => clearInterval(intervalId);
@@ -455,7 +455,6 @@ export default function EnhancedStudentDashboard() {
 
   return (
     <>
-      <StudentNavbar />
       <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
@@ -629,8 +628,8 @@ export default function EnhancedStudentDashboard() {
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="groupProject">Group</TabsTrigger>
-                <TabsTrigger value="stats">Statistics</TabsTrigger>
-                {/* <TabsTrigger value="project">Final Project</TabsTrigger> */}
+                {/* <TabsTrigger value="stats">Statistics</TabsTrigger> */}
+                <TabsTrigger value="project">Final Project</TabsTrigger>
                 {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
               </TabsList>
               <TabsContent value="attendance">
