@@ -6,6 +6,8 @@ import { authOptions } from "./api/auth/[...nextauth]/option";
 import { getServerSession } from "next-auth";
 import { Toaster } from 'sonner';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import Footer from "./components/footer/footer";
+import StudentNavbar from "./components/students/navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -50,7 +52,14 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider session={session} >
+          {
+           session && <StudentNavbar />
+          }
            {children}
+           {
+            session && <Footer />
+           }
+             
            <Toaster position="top-center" theme="light" toastOptions={customToastOptions}/>
         </AuthProvider>
       </body>
