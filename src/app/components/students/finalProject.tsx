@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Upload } from "lucide-react"
-import { submitFinalProject } from "@/lib/action"
+// import { submitFinalProject } from "@/lib/action"
 import { Session } from "next-auth"
 import axios from "axios"
 
@@ -49,7 +49,7 @@ export default function FinalProject({ session }: Props) {
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Final Project Submission</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Final Project Progress</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -64,30 +64,30 @@ export default function FinalProject({ session }: Props) {
           </div>
 
           <div>
-            <Label htmlFor="techStack">Tech Stack</Label>
+            <Label htmlFor="techStack">Github Repo Link</Label>
             <Input
               id="techStack"
               value={techStack}
               onChange={(e) => setTechStack(e.target.value)}
-              placeholder="e.g., React, Node.js, MongoDB"
+              placeholder="Enter the link to your project's Github repository"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="description">Project Description</Label>
+            <Label htmlFor="description">Project Progress</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your project. How did this idea come to your mind? What will you do in this project? How will you make it?"
+              placeholder="Describe the progress of your project. What have you done so far? What are you planning to do next?"
               rows={8}
               required
             />
           </div>
 
           <Button onClick={submitProject} className="w-full bg-primary hover:bg-primary/90">
-            <Upload className="mr-2 h-4 w-4" /> Submit Final Project
+            <Upload className="mr-2 h-4 w-4" /> Submit 
           </Button>
         </CardContent>
       </Card>
