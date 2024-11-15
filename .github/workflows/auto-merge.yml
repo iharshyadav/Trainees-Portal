@@ -2,6 +2,8 @@ name: Auto Merge Pull Requests
 
 on:
   pull_request:
+    branches:
+      - main  
     types:
       - opened
       - synchronize  
@@ -13,11 +15,10 @@ jobs:
 
     permissions:
       pull-requests: write
-      contents: write  # Required to merge PRs
+      contents: write  
 
     steps:
-      # Check out the code
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Verify PR Author
@@ -27,12 +28,11 @@ jobs:
             exit 0
           fi
 
-      # Merge the PR
       - name: Auto Merge Pull Request
         uses: peter-evans/merge-pull-request@v2
         with:
           pull-request: ${{ github.event.pull_request.number }}
-          merge-method: squash  # Choose 'merge', 'squash', or 'rebase'
+          merge-method: squash  
           commit-title: "Auto-merge PR #${{ github.event.pull_request.number }}"
           commit-message: |
-            This pull request was automatically merged.
+            Automatically merged by workflow.
