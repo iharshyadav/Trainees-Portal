@@ -20,6 +20,7 @@ export default function FinalProject({ session }: Props) {
   const [projectTitle, setProjectTitle] = useState("")
   const [techStack, setTechStack] = useState("")
   const [description, setDescription] = useState("")
+  const [hostedLink, setHostedLink] = useState("")
 
   const submitProject = async () => {
     if (projectTitle && techStack && description) {
@@ -28,6 +29,7 @@ export default function FinalProject({ session }: Props) {
         projectTitle,
         techStack,
         description,
+        hostedLink,
         studentNo: session?.user.studentNo,
         name: session?.user.name,
         })
@@ -37,6 +39,7 @@ export default function FinalProject({ session }: Props) {
         setProjectTitle("")
         setTechStack("")
         setDescription("")
+        setHostedLink("")
       } else {
         toast.error(response.data.message as any)
       }
@@ -49,7 +52,7 @@ export default function FinalProject({ session }: Props) {
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Final Project Progress</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Final Project Submission</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -59,6 +62,17 @@ export default function FinalProject({ session }: Props) {
               value={projectTitle}
               onChange={(e) => setProjectTitle(e.target.value)}
               placeholder="Enter your project title"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="techStack">Hosted Link</Label>
+            <Input
+              id="hostedLink"
+              value={hostedLink}
+              onChange={(e) => setHostedLink(e.target.value)}
+              placeholder="Enter the hosted link of your project"
               required
             />
           </div>
@@ -75,12 +89,12 @@ export default function FinalProject({ session }: Props) {
           </div>
 
           <div>
-            <Label htmlFor="description">Project Progress</Label>
+            <Label htmlFor="description">Project description</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the progress of your project. What have you done so far? What are you planning to do next?"
+              placeholder="Enter a brief description of your project min 100 words"
               rows={8}
               required
             />
