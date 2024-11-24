@@ -626,12 +626,12 @@ export default function EnhancedStudentDashboard() {
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
-                <TabsTrigger value="project">Final Project Submission</TabsTrigger>
+                {/* <TabsTrigger value="project">Final Project Submission</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 {/* <TabsTrigger value="groupProject">Group</TabsTrigger> */}
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
 
-                {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
+                <TabsTrigger value="profile-links">Profile</TabsTrigger>
               </TabsList>
               <TabsContent value="attendance">
                 <CardHeader>
@@ -885,7 +885,7 @@ export default function EnhancedStudentDashboard() {
                   </CardContent>
                 </div>
               </TabsContent>
-              {/* <TabsContent value="profile-links">
+              <TabsContent value="profile-links">
                 <Card>
                   <CardHeader>
                     <CardTitle>Profile Links</CardTitle>
@@ -973,7 +973,7 @@ export default function EnhancedStudentDashboard() {
                     </form>
                   </CardContent>
                 </Card>
-              </TabsContent> */}
+              </TabsContent>
             </Tabs>
           </Card>
 
