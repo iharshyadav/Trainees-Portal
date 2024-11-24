@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/option';
 import { ConnectToDB } from '@/lib/db';
 import { User } from '@/lib/models/user.model';
-import Finalproject from '@/lib/models/Projectfinal';
+import FinalProjectSubmission from '@/lib/models/finalprojectsubmission';
 
 export async function POST(req: Request) {
   try {
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     console.log(body)
-    const { projectTitle , description, techStack,name,studentNo  } = body;
+    const { projectTitle , description, techStack,name,studentNo,hostedLink  } = body;
 
     const user = await User.findOne({
       studentNo: session.user.studentNo,
@@ -43,20 +43,22 @@ export async function POST(req: Request) {
     console.log(userId,"userId");
 
     // Create or update profile data
-    const existingProject = await Finalproject.findOne({ userId });
+    const existingProject = await FinalProjectSubmission.findOne({ userId });
     if (existingProject) {
         existingProject.projectName = projectTitle;
         existingProject.projectDescription = description;
         existingProject.githubLink = techStack;
+        existingProject.hostedLink = hostedLink;
         await existingProject.save();
     } else {
-      const project = new Finalproject({
+      const project = new FinalProjectSubmission({
         userId,
         projectName: projectTitle,
         projectDescription : description,
         githubLink : techStack,
         Name:name,
-        studentNo
+        studentNo,
+        hostedLink,
       });
       console.log(project)
       await project.save();
