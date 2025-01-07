@@ -26,10 +26,10 @@ jobs:
         node-version: 18
 
     - name: Install Dependencies
-      run: npm install
+      run: pnpm install 
 
     - name: Build trainees-portal
-      run: npm run build
+      run: pnpm run build
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v0.1.8
@@ -43,23 +43,39 @@ jobs:
             npm install pm2@latest -g
           fi
 
+          # Navigate to project directory
+          cd $VPS_PATH
+
+          # Check if git repository exists, if not clone
           if [ ! -d "$VPS_PATH/.git" ]; then
             git clone https://github.com/iharshyadav/Trainees-Portal.git $VPS_PATH
+            cd $VPS_PATH
           else
             cd $VPS_PATH
             git pull origin main
           fi
 
-          cd $VPS_PATH
+          # Install dependencies using pnpm
+          pnpm install
 
-          npm install
-
+          # Log environment variable creation
+          echo "Creating .env file with MONGO_URI and NEXTAUTH_SECRET"
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" > $VPS_PATH/.env
           echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> $VPS_PATH/.env
 
-          npm run build
+          # Verify if the .env file was created
+          if [ -f "$VPS_PATH/.env" ]; then
+            echo ".env file created successfully"
+          else
+            echo "Failed to create .env file"
+          fi
 
+          # Build the project
+          pnpm run build
+
+          # Stop and restart the app using PM2
           pm2 stop $APP_NAME || true
           pm2 start npm --name $APP_NAME -- start
 
+          # Save the PM2 process
           pm2 save
