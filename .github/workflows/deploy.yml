@@ -14,7 +14,7 @@ jobs:
       APP_NAME: trainees-portal
       VPS_USER: ubuntu
       VPS_HOST: 13.200.185.99
-      VPS_PATH: /home/ubuntu/trainees-portal
+      VPS_PATH: /home/ubuntu/Trainees-Portal
 
     steps:
     - name: Checkout Code
@@ -50,7 +50,12 @@ jobs:
             git pull origin main
           fi
 
+          cd $VPS_PATH
+
           npm install
+
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" > $VPS_PATH/.env
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> $VPS_PATH/.env
 
           npm run build
 
