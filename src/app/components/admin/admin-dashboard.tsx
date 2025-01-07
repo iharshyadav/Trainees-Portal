@@ -23,6 +23,7 @@ import axios from "axios"
 import FlagUser from "./flag-user"
 import { showAllUserDetails } from "@/lib/action"
 import AddLeader from "./addLeader"
+import ToggleSection from "./components/fetchSections"
 
 export default function AttendanceDashboard() {
   const [apiData, setApiData] = useState<any>(null)
@@ -311,7 +312,7 @@ export default function AttendanceDashboard() {
       <FreezeAttendance />
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">
             <Users className="mr-2 h-4 w-4" />
             Overview
@@ -327,6 +328,10 @@ export default function AttendanceDashboard() {
           <TabsTrigger value="Add Leader">
             <BarChart className="mr-2 h-4 w-4" />
             Add Leader
+          </TabsTrigger>
+          <TabsTrigger value="sections">
+            <BarChart className="mr-2 h-4 w-4" />
+            Sections
           </TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
@@ -364,6 +369,9 @@ export default function AttendanceDashboard() {
         </TabsContent>
         <TabsContent value="Add Leader">
            <AddLeader />
+        </TabsContent>
+        <TabsContent value="overview">
+           <ToggleSection /> 
         </TabsContent>
       </Tabs>
     </div>

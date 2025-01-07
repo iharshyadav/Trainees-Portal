@@ -49,6 +49,7 @@ import { EditProfilePopup } from "./edit-student-profile";
 import axios from "axios";
 import {
   fetchUserProjects,
+  getActiveSections,
   LeaderAccess,
   saveNewProject,
   showAttendence,
@@ -69,6 +70,7 @@ import { useRouter } from "next/navigation";
 import AttendanceSkeleton from "./skeletons/attendance-skeleton";
 import SubmittedProjects from "./components/submitted-projects/submittedProjects";
 import SkeletonSubmitted from "./components/submitted-projects/skeletonSubmitted";
+import { GetServerSideProps } from "next";
 
 interface userFlagCount {
   flagCount: number | null;
@@ -120,7 +122,12 @@ const projectData = [
   },
 ];
 
-export default function EnhancedStudentDashboard() {
+interface HomePageProps {
+  allSections: { sectionName: string; isActive: boolean }[];
+  activeSections: string[];
+}
+
+export default function EnhancedStudentDashboard({allSections , activeSections} : HomePageProps) {
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAttendanceWindowOpen, setIsAttendanceWindowOpen] = useState(true);
@@ -624,12 +631,16 @@ export default function EnhancedStudentDashboard() {
           <Card className="lg:col-span-2">
             <Tabs defaultValue="attendance" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                {
+                  activeSections?.map((item,index) => (
+                    <TabsTrigger key={index} value={`${item[index]}`}>{item[index]}</TabsTrigger>
+                  ))
+                }
                 {/* <TabsTrigger value="timetable">Timetable</TabsTrigger> */}
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="groupProject">Group</TabsTrigger>
-                {/* <TabsTrigger value="stats">Statistics</TabsTrigger> */}
-                <TabsTrigger value="project">Final Project</TabsTrigger>
+                <TabsTrigger value="stats">Statistics</TabsTrigger>
+                {/* <TabsTrigger value="project">Final Project</TabsTrigger> */}
                 {/* <TabsTrigger value="profile-links">Profile</TabsTrigger> */}
               </TabsList>
               <TabsContent value="attendance">
@@ -1090,3 +1101,14 @@ export default function EnhancedStudentDashboard() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const { allSections, activeSections } = await getActiveSections();
+  console.log(allSections.map((i) => i._id),"scec")
+  return {
+    props: {
+      allSections,
+      activeSections,
+    },
+  };
+};

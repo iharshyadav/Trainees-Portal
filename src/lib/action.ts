@@ -9,6 +9,7 @@ import FlagUsers from "./models/flag.model"
 import ProfileImages from "./models/userImage"
 import GroupProject from "./models/groupProject"
 import Leader from "./models/Leader.model"
+import { WebsiteSection } from "./models/section.model"
 
 export const showAttendence = async () => {
 
@@ -321,11 +322,45 @@ export const addLeader = async (name : string , studentNo : string) => {
 }
 
 
-export async function submitFinalProject(data: any) {
+export async function getActiveSections() {
   await ConnectToDB();
 
-  if(data.description === "" || data.projectTitle === "" || data.studentNo === "" || data.techStack === ""){
-    return { success: false, message: "Failed to submit project.Please fill all the fields!!!" };
-  }
+  try {
+    const allSections = await WebsiteSection.find().select('sectionName isActive').lean();
 
+    const activeSections = allSections.filter(section => section.isActive).map(section => section.sectionName);
+
+    console.log(activeSections)
+
+    return {
+      allSections, 
+      activeSections,  
+    };
+  } catch (error) {
+    console.error('Error fetching sections:', error);
+    return {
+      allSections: [],
+      activeSections: [],
+    };
+  }
+}
+
+export async function toggleSectionStatus(sectionId: string) {
+  await ConnectToDB();
+  try {
+    const section = await WebsiteSection.findById(sectionId).lean();
+    if (section) {
+      if (!Array.isArray(section)) {
+        section.isActive = !section.isActive;
+        await section.save();
+      } else {
+        return { success: false, message: "Section data format is incorrect" };
+      }
+      return { success: true, isActive: section.isActive };
+    }
+    return { success: false, message: "Section not found" };
+  } catch (error) {
+    console.error("Error toggling section status:", error);
+    return { success: false, message: "Failed to update section status" };
+  }
 }
