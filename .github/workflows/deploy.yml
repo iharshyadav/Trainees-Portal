@@ -7,16 +7,14 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build, Push, and Deploy
+    name: Build and Deploy Next.js App
     runs-on: ubuntu-latest
 
     env:
       APP_NAME: trainees-portal
-      IMAGE_NAME: iharshyadav/trainees-portal
       VPS_USER: ubuntu
       VPS_HOST: 13.200.185.99
       VPS_PATH: /home/ubuntu/trainees-portal
-      CONTAINER_NAME: trainees-portal
 
     steps:
     - name: Checkout Code
@@ -33,34 +31,21 @@ jobs:
     - name: Build Next.js App
       run: npm run build
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t $IMAGE_NAME .
-        docker push $IMAGE_NAME
-
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v0.1.8
       with:
-        host: $VPS_HOST
-        username: $VPS_USER
+        host: ${{ env.VPS_HOST }}
+        username: ${{ env.VPS_USER }}
         key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
         script: |
-          docker pull $IMAGE_NAME
+          cd ${{ env.VPS_PATH }}
+          git pull origin main
+
+          npm install
+
+          npm run build
+
+          pm2 stop ${{ env.APP_NAME }} || true
+          pm2 start npm --name ${{ env.APP_NAME }} -- start
           
-          docker stop $CONTAINER_NAME || true
-          docker rm $CONTAINER_NAME || true
-          
-          docker run -d \
-            --name $CONTAINER_NAME \
-            -p 80:3000 \
-            --restart always \
-            $IMAGE_NAME
+          pm2 save
