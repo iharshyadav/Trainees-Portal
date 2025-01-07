@@ -1,4 +1,4 @@
-name: Deploy Next.js App
+name: Deploy trainees-portal
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
         docker push $IMAGE_NAME
 
     - name: Deploy to VPS
-      uses: appleboy/ssh-action@v0.5.3
+      uses: appleboy/ssh-action@v0.1.8
       with:
         host: $VPS_HOST
         username: $VPS_USER
